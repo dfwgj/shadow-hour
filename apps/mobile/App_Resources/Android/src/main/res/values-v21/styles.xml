@@ -3,8 +3,10 @@
 
     <!-- Application theme -->
     <style name="AppThemeBase21" parent="AppThemeBase">
-        <!-- Uncomment this to make the app show underneat the status bar -->
-        <!-- <item name="android:windowTranslucentStatus">true</item> -->
+        <!-- 状态栏设置：白色背景 -->
+        <item name="android:statusBarColor">#FFFFFF</item>
+        <!-- 深色状态栏图标（需要 API 23+，但这里设置不会出错） -->
+        <item name="android:windowLightStatusBar">true</item>
 
         <item name="android:datePickerStyle">@style/SpinnerDatePicker</item>
         <item name="android:timePickerStyle">@style/SpinnerTimePicker</item>

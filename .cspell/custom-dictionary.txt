@@ -1,0 +1,9 @@
+xierfloat
+lintstagedrc
+generatexlsx
+esbuild
+icns
+Avenir
+vite
+zindex
+disturl
