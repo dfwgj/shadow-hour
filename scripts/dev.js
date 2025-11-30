@@ -3,6 +3,12 @@ import { watch } from "rollup";
 
 async function dev() {
   const configs = await getRollupConfigs();
+
+  if (Object.keys(configs).length === 0) {
+    console.log("✅ 没有需要监听的包，退出");
+    return;
+  }
+
   for (const name in configs) {
     const config = configs[name];
     const watcher = watch(

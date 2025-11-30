@@ -10,9 +10,34 @@ import postcss from "rollup-plugin-postcss";
 const __filename = URL.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const packages = ["utils", "components"];
+// 自动扫描 packages 目录，只处理存在 buildOptions 的包
+async function discoverPackages() {
+  const packagesDir = path.resolve(__dirname, "../packages");
+  const entries = await fs.promises.readdir(packagesDir, { withFileTypes: true });
+  const packages = [];
 
-function getPackageRoots() {
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+
+    const pkgJsonPath = path.resolve(packagesDir, entry.name, "package.json");
+    if (!fs.existsSync(pkgJsonPath)) continue;
+
+    try {
+      const content = await fs.promises.readFile(pkgJsonPath, "utf-8");
+      const pkg = JSON.parse(content);
+      // 只处理有 buildOptions 的包（需要 rollup 打包的）
+      if (pkg.buildOptions) {
+        packages.push(entry.name);
+      }
+    } catch {
+      // 忽略读取失败的包
+    }
+  }
+
+  return packages;
+}
+
+function getPackageRoots(packages) {
   return packages.map(pkg => path.resolve(__dirname, "../packages", pkg));
 }
 
@@ -91,7 +116,16 @@ async function getRollupConfig(root) {
 }
 
 export async function getRollupConfigs() {
-  const roots = getPackageRoots();
+  const packages = await discoverPackages();
+
+  if (packages.length === 0) {
+    console.log("📦 没有找到需要打包的包（需要 package.json 中有 buildOptions 配置）");
+    return {};
+  }
+
+  console.log(`📦 发现 ${packages.length} 个需要打包的包: ${packages.join(", ")}`);
+
+  const roots = getPackageRoots(packages);
   const configs = await Promise.all(roots.map(getRollupConfig));
   const result = {};
   for (let i = 0; i < packages.length; i++) {

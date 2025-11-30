@@ -2,32 +2,25 @@
 /**
  * 日历应用主页 - 参考原型设计
  */
-import { ref, computed, onMounted } from 'nativescript-vue'
-import { Screen, Application, Utils } from '@nativescript/core'
-import { useCalendar } from '../composables/useCalendar'
-import { solarToLunar, getYearInfo } from '../utils/lunar'
-import MonthView from './calendar/MonthView.vue'
-import YearView from './calendar/YearView.vue'
+import { ref, computed, onMounted, watch } from "nativescript-vue";
+import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
+import { useCalendar } from "../composables/useCalendar";
+import { solarToLunar, getYearInfo } from "../utils/lunar";
+import MonthView from "../components/calendar/MonthView.vue";
+import YearView from "../components/calendar/YearView.vue";
 
 // 视图类型
-type ViewType = 'year' | 'month' | 'week' | 'schedule'
-const currentView = ref<ViewType>('month')
+type ViewType = "year" | "month" | "week" | "schedule";
+const currentView = ref<ViewType>("month");
 
 // 底部导航
-type NavType = 'calendar' | 'today' | 'todo'
-const currentNav = ref<NavType>('calendar')
+type NavType = "calendar" | "today" | "todo";
+const currentNav = ref<NavType>("calendar");
 
-const {
-  selectedDate,
-  currentDate,
-  selectedDateEvents,
-  goToPrevious,
-  goToNext,
-  goToToday
-} = useCalendar()
+const { selectedDate, currentDate, selectedDateEvents, goToPrevious, goToNext, goToToday } = useCalendar();
 
 // 状态栏高度
-const statusBarHeight = ref(24)
+const statusBarHeight = ref(24);
 
 // 获取状态栏高度
 onMounted(() => {
@@ -35,61 +28,97 @@ onMounted(() => {
     const resourceId = Utils.android
       .getApplicationContext()
       .getResources()
-      .getIdentifier('status_bar_height', 'dimen', 'android')
+      .getIdentifier("status_bar_height", "dimen", "android");
     if (resourceId > 0) {
-      const height = Utils.android
-        .getApplicationContext()
-        .getResources()
-        .getDimensionPixelSize(resourceId)
-      statusBarHeight.value = height / Screen.mainScreen.scale
+      const height = Utils.android.getApplicationContext().getResources().getDimensionPixelSize(resourceId);
+      statusBarHeight.value = height / Screen.mainScreen.scale;
     }
   }
-})
+});
 
-// 头部标题
+// 头部标题（根据视图类型显示不同内容）
 const headerTitle = computed(() => {
-  const d = currentDate.value
-  return `${d.getFullYear()}年${d.getMonth() + 1}月`
-})
+  const d = currentDate.value;
+  if (currentView.value === "year") {
+    return `${d.getFullYear()}年`;
+  }
+  return `${d.getFullYear()}年${d.getMonth() + 1}月`;
+});
 
 // 今日信息
 const todayInfo = computed(() => {
-  const d = selectedDate.value
-  const lunar = solarToLunar(d)
-  return `${d.getMonth() + 1}月${d.getDate()}日 农历${lunar.lunarMonthName}${lunar.lunarDayName}`
-})
+  const d = selectedDate.value;
+  const lunar = solarToLunar(d);
+  return `${d.getMonth() + 1}月${d.getDate()}日 农历${lunar.lunarMonthName}${lunar.lunarDayName}`;
+});
 
 // 年份信息（用于黄历卡片）
 const yearInfo = computed(() => {
-  return getYearInfo(selectedDate.value)
-})
+  return getYearInfo(selectedDate.value);
+});
 
 // 农历日期信息
 const lunarDayInfo = computed(() => {
-  const lunar = solarToLunar(selectedDate.value)
-  return lunar.lunarDayName
-})
+  const lunar = solarToLunar(selectedDate.value);
+  return lunar.lunarDayName;
+});
 
 // 视图切换
 const viewTabs = [
-  { type: 'year' as ViewType, label: '年' },
-  { type: 'month' as ViewType, label: '月' },
-  { type: 'week' as ViewType, label: '周' },
-  { type: 'schedule' as ViewType, label: '日程' }
-]
+  { type: "year" as ViewType, label: "年" },
+  { type: "month" as ViewType, label: "月" },
+  { type: "week" as ViewType, label: "周" },
+  { type: "schedule" as ViewType, label: "日程" }
+];
+
+// 内容区域引用
+const contentRef = ref();
+const isAnimating = ref(false);
 
 function switchView(type: ViewType) {
-  currentView.value = type
+  if (type === currentView.value || isAnimating.value) return;
+
+  const view = contentRef.value?.nativeView;
+  if (!view) {
+    currentView.value = type;
+    return;
+  }
+
+  isAnimating.value = true;
+
+  // 先淡出
+  view
+    .animate({
+      opacity: 0,
+      duration: 150,
+      curve: CoreTypes.AnimationCurve.easeIn
+    })
+    .then(() => {
+      // 切换视图
+      currentView.value = type;
+      // 淡入
+      setTimeout(() => {
+        view
+          .animate({
+            opacity: 1,
+            duration: 150,
+            curve: CoreTypes.AnimationCurve.easeOut
+          })
+          .then(() => {
+            isAnimating.value = false;
+          });
+      }, 10);
+    });
 }
 
 // 底部导航切换
 function switchNav(type: NavType) {
-  currentNav.value = type
+  currentNav.value = type;
 }
 
 // 打开新建日程页面
 function openAddEvent() {
-  console.log('Open add event page')
+  console.log("Open add event page");
 }
 </script>
 
@@ -122,7 +151,7 @@ function openAddEvent() {
 
         <!-- 主内容区 -->
         <ScrollView row="3">
-          <StackLayout>
+          <StackLayout ref="contentRef">
             <!-- 月视图 -->
             <StackLayout v-if="currentView === 'month' || currentView === 'week'">
               <MonthView />
@@ -147,7 +176,7 @@ function openAddEvent() {
             </StackLayout>
 
             <!-- 年视图 -->
-            <YearView v-else-if="currentView === 'year'" />
+            <YearView v-else-if="currentView === 'year'" @switch-to-month="switchView('month')" />
 
             <!-- 日程视图占位 -->
             <Label
@@ -167,21 +196,13 @@ function openAddEvent() {
 
         <!-- 底部导航 -->
         <GridLayout row="5" columns="*, *" class="h-16 bg-white border-t border-gray-100">
-          <StackLayout
-            col="0"
-            class="horizontal-center vertical-center"
-            @tap="switchNav('calendar')"
-          >
+          <StackLayout col="0" class="horizontal-center vertical-center" @tap="switchNav('calendar')">
             <Label
               text="日程"
               :class="['text-sm text-center', currentNav === 'calendar' ? 'text-orange-500' : 'text-gray-500']"
             />
           </StackLayout>
-          <StackLayout
-            col="1"
-            class="horizontal-center vertical-center"
-            @tap="switchNav('today')"
-          >
+          <StackLayout col="1" class="horizontal-center vertical-center" @tap="switchNav('today')">
             <Label
               text="智能安排"
               :class="['text-sm text-center', currentNav === 'today' ? 'text-orange-500' : 'text-gray-500']"
@@ -196,8 +217,5 @@ function openAddEvent() {
 <style scoped>
 .vertical-center {
   vertical-align: center;
-}
-.horizontal-center {
-  horizontal-align: center;
 }
 </style>
