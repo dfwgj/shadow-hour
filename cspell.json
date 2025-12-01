@@ -36,10 +36,12 @@
     ".cspell"
   ],
   "words": [
+    "AUTOINCREMENT",
     "cdylib",
     "nativescript",
     "pxtorem",
     "rlib",
+    "rrule",
     "serde",
     "staticlib",
     "Tauri",

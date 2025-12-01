@@ -1,3 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+.text-mxs {
+  font-size: 0.60rem;
+  line-height: 1rem;
+}

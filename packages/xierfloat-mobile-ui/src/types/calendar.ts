@@ -21,7 +21,7 @@ export interface LunarDate {
   festival?: string; // 节日 (如：春节)
 }
 
-// 日期单元格（用于渲染日历）
+// 日期单元格
 export interface DateCell {
   date: Date;
   day: number;
@@ -29,7 +29,7 @@ export interface DateCell {
   isToday: boolean;
   isSelected: boolean;
   isWeekend: boolean;
-  lunar?: LunarDate;
+  lunar?: LunarDate | undefined;
 }
 
 // 周数据（用于渲染日历网格）

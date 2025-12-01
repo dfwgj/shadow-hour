@@ -1,14 +1,143 @@
+<template>
+  <Frame>
+    <Page actionBarHidden="true">
+      <!-- 使用外层 GridLayout 实现弹窗覆盖 -->
+      <GridLayout rows="*" columns="*">
+        <!-- 主内容 -->
+        <GridLayout row="0" col="0" rows="auto, auto, auto, *, auto" class="bg-gray-100">
+          <!-- 状态栏占位 -->
+          <StackLayout row="0" :height="statusBarHeight" />
+          <!-- 头部标题 -->
+          <StackLayout row="1" class="bg-white p-3">
+            <Label :text="headerTitle" class="text-2xl font-bold text-gray-800" />
+          </StackLayout>
+
+          <!-- 视图切换器 -->
+          <GridLayout row="2" columns="*, *, *, *" class="bg-gray-100 mx-4 rounded-3xl p-1 mt-2">
+            <Label
+              v-for="(tab, index) in viewTabs"
+              :key="tab.type"
+              :col="index"
+              :text="tab.label"
+              :class="[
+                'text-center py-2 text-sm text-gray-800 rounded-2xl',
+                currentView === tab.type ? 'bg-white font-medium' : ''
+              ]"
+              @tap="switchView(tab.type)"
+            />
+          </GridLayout>
+
+          <!-- 主内容区 -->
+          <ScrollView row="3">
+            <StackLayout ref="contentRef">
+              <!-- 月视图 -->
+              <StackLayout v-if="currentView === 'month' || currentView === 'week'">
+                <MonthView
+                  class="m-4"
+                  ref="monthViewRef"
+                  :year="currentDate.getFullYear()"
+                  :month="currentDate.getMonth()"
+                  :selected-date="selectedDate"
+                  :first-day-of-week="firstDayOfWeek"
+                  :show-lunar="showLunar"
+                  :show-outside-days="true"
+                  @select="onDateSelect"
+                  @swipe="onSwipe"
+                />
+                <!-- 今日信息 -->
+                <GridLayout columns="*, auto" class="py-3 px-4">
+                  <Label col="0" :text="todayInfo" class="text-sm text-gray-500" />
+                </GridLayout>
+                <!-- 事件卡片 -->
+                <StackLayout class="px-4" v-if="eventList.length > 0">
+                  <EventCard
+                    v-for="event in eventList"
+                    :key="event.uid"
+                    :title="event.summary"
+                    :start-time="event.dtStart"
+                    :end-time="event.dtEnd"
+                    color="#F97316"
+                    class="mb-3"
+                    @tap="onEventTap(event)"
+                    @delete="onDeleteEvent(event.uid)"
+                  />
+                </StackLayout>
+                <Label v-else text="暂无事件" class="text-base text-gray-500 text-center p-12" />
+              </StackLayout>
+
+              <!-- 年视图 -->
+              <YearView
+                v-else-if="currentView === 'year'"
+                class="m-4"
+                ref="yearViewRef"
+                :year="currentDate.getFullYear()"
+                :selected-date="selectedDate"
+                :first-day-of-week="firstDayOfWeek"
+                :show-today="true"
+                color="#F97316"
+                @select="onDateSelect"
+                @month-tap="onYearMonthTap"
+                @swipe="onYearSwipe"
+              />
+
+              <!-- 日程视图占位 -->
+              <Label
+                v-else-if="currentView === 'schedule'"
+                text="日程视图开发中..."
+                class="text-base text-gray-500 text-center p-12"
+              />
+            </StackLayout>
+          </ScrollView>
+
+          <!-- 底部导航 -->
+          <GridLayout row="4" columns="*, *" class="h-16 bg-white border-t border-gray-100">
+            <StackLayout col="0" class="horizontal-center vertical-center" @tap="switchNav('calendar')">
+              <Label
+                text="日程"
+                :class="['text-sm text-center', currentNav === 'calendar' ? 'text-orange-500' : 'text-gray-500']"
+              />
+            </StackLayout>
+            <StackLayout col="1" class="horizontal-center vertical-center" @tap="switchNav('today')">
+              <Label
+                text="智能安排"
+                :class="['text-sm text-center', currentNav === 'today' ? 'text-orange-500' : 'text-gray-500']"
+              />
+            </StackLayout>
+          </GridLayout>
+
+          <GridLayout row="2" rowSpan="2" columns="*, auto" rows="*, auto" class="pointer-events-none">
+            <StackLayout col="1" row="1" class="w-14 h-14 bg-white rounded-full m-4 shadow-lg" @tap="openAddEvent">
+              <Label text="+" class="text-4xl text-orange-500 text-center" style="line-height: 56" />
+            </StackLayout>
+          </GridLayout>
+        </GridLayout>
+
+        <AddEventModal
+          row="0"
+          col="0"
+          :visible="showAddEventModal"
+          :selected-date="selectedDate"
+          :event="editingEvent"
+          @close="closeAddEventModal"
+          @submit="handleAddEventSubmit"
+          @update="handleUpdateEvent"
+        />
+      </GridLayout>
+    </Page>
+  </Frame>
+</template>
 <script lang="ts" setup>
-/**
- * 日历应用主页 - 参考原型设计
- */
 import { ref, computed, onMounted, watch } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
 import { solarToLunar, getYearInfo } from "../utils/lunar";
-import MonthView from "../components/calendar/MonthView.vue";
-import YearView from "../components/calendar/YearView.vue";
+import { MonthView, YearView, EventCard } from "@xierfloat-monorepo/mobile-ui";
+import AddEventModal from "../components/AddEventModal.vue";
+import { CalendarEvent } from "~/types/calendar";
+import { Dialogs } from "@nativescript/core";
 
+const monthViewRef = ref<InstanceType<typeof MonthView> | null>(null);
+const yearViewRef = ref<InstanceType<typeof YearView> | null>(null);
 // 视图类型
 type ViewType = "year" | "month" | "week" | "schedule";
 const currentView = ref<ViewType>("month");
@@ -17,13 +146,36 @@ const currentView = ref<ViewType>("month");
 type NavType = "calendar" | "today" | "todo";
 const currentNav = ref<NavType>("calendar");
 
-const { selectedDate, currentDate, selectedDateEvents, goToPrevious, goToNext, goToToday } = useCalendar();
+// 新增日程弹窗
+const showAddEventModal = ref(false);
+
+// 当前编辑的事件（null 表示新增模式）
+const editingEvent = ref<CalendarEvent | null>(null);
+
+// 日程列表
+const eventList = ref<CalendarEvent[]>([]);
+
+const {
+  selectedDate,
+  currentDate,
+  firstDayOfWeek,
+  showLunar,
+  selectDate,
+  init,
+  addEvent,
+  updateEvent,
+  deleteEvent,
+  loadEventsByDate
+} = useCalendar();
 
 // 状态栏高度
 const statusBarHeight = ref(24);
 
-// 获取状态栏高度
-onMounted(() => {
+// 初始化数据库和获取状态栏高度
+onMounted(async () => {
+  // 初始化数据库
+  await init();
+  // 获取状态栏高度
   if (Application.android) {
     const resourceId = Utils.android
       .getApplicationContext()
@@ -34,9 +186,11 @@ onMounted(() => {
       statusBarHeight.value = height / Screen.mainScreen.scale;
     }
   }
+  // 加载当前日期的事件
+  await getEvents();
 });
 
-// 头部标题（根据视图类型显示不同内容）
+// 头部标题
 const headerTitle = computed(() => {
   const d = currentDate.value;
   if (currentView.value === "year") {
@@ -52,18 +206,7 @@ const todayInfo = computed(() => {
   return `${d.getMonth() + 1}月${d.getDate()}日 农历${lunar.lunarMonthName}${lunar.lunarDayName}`;
 });
 
-// 年份信息（用于黄历卡片）
-const yearInfo = computed(() => {
-  return getYearInfo(selectedDate.value);
-});
-
-// 农历日期信息
-const lunarDayInfo = computed(() => {
-  const lunar = solarToLunar(selectedDate.value);
-  return lunar.lunarDayName;
-});
-
-// 视图切换
+// 视图
 const viewTabs = [
   { type: "year" as ViewType, label: "年" },
   { type: "month" as ViewType, label: "月" },
@@ -90,13 +233,11 @@ function switchView(type: ViewType) {
   view
     .animate({
       opacity: 0,
-      duration: 150,
+      duration: 10,
       curve: CoreTypes.AnimationCurve.easeIn
     })
     .then(() => {
-      // 切换视图
       currentView.value = type;
-      // 淡入
       setTimeout(() => {
         view
           .animate({
@@ -116,106 +257,127 @@ function switchNav(type: NavType) {
   currentNav.value = type;
 }
 
-// 打开新建日程页面
+// 打开新建日程弹窗
 function openAddEvent() {
-  console.log("Open add event page");
+  editingEvent.value = null;
+  showAddEventModal.value = true;
+}
+
+// 点击事件卡片，打开查看/编辑弹窗
+function onEventTap(event: CalendarEvent) {
+  editingEvent.value = event;
+  showAddEventModal.value = true;
+}
+
+// 关闭新建日程弹窗
+function closeAddEventModal() {
+  showAddEventModal.value = false;
+  editingEvent.value = null;
+}
+
+async function getEvents() {
+  try {
+    const events = await loadEventsByDate(selectedDate.value);
+    eventList.value = events;
+    console.log("从数据库获取的事件:", events);
+  } catch (error) {
+    console.error("获取事件失败:", error);
+  }
+}
+// 处理日期选中
+async function onDateSelect(date: Date) {
+  selectDate(date);
+  // 加载选中日期的事件
+  await getEvents();
+}
+// 处理月视图左右滑动切换月份
+function onSwipe(direction: "left" | "right") {
+  monthViewRef.value?.playSlideAnimation(direction, () => {
+    const current = currentDate.value;
+    const newMonth = direction === "left" ? current.getMonth() + 1 : current.getMonth() - 1;
+    currentDate.value = new Date(current.getFullYear(), newMonth, 1);
+  });
+}
+
+// 处理年视图中月份点击（切换到月视图）
+function onYearMonthTap(month: number) {
+  const newDate = new Date(currentDate.value.getFullYear(), month, 1);
+  currentDate.value = newDate;
+  switchView("month");
+}
+
+// 处理年视图左右滑动切换年份
+function onYearSwipe(direction: "left" | "right") {
+  yearViewRef.value?.playSlideAnimation(direction, () => {
+    const current = currentDate.value;
+    const newYear = direction === "left" ? current.getFullYear() + 1 : current.getFullYear() - 1;
+    currentDate.value = new Date(newYear, current.getMonth(), 1);
+  });
+}
+
+// 删除事件
+async function onDeleteEvent(uid: string) {
+  try {
+    const confirmed = await Dialogs.confirm({
+      title: "确认删除",
+      message: "确定删除该事件吗？",
+      okButtonText: "删除",
+      cancelButtonText: "取消"
+    });
+    if (confirmed) {
+      await deleteEvent(uid);
+      console.log("事件已删除:", uid);
+      await getEvents();
+    }
+  } catch (error) {
+    console.error("删除事件失败:", error);
+  }
+}
+// 提交新建日程
+async function handleAddEventSubmit(eventData: { summary: string; description: string; dtStart: Date; dtEnd: Date }) {
+  try {
+    await addEvent({
+      summary: eventData.summary,
+      description: eventData.description,
+      dtStart: eventData.dtStart,
+      dtEnd: eventData.dtEnd,
+      alarms: [{ action: "DISPLAY", trigger: { minutes: -30 } }]
+    });
+
+    showAddEventModal.value = false;
+    console.log("事件已添加");
+  } catch (error) {
+    console.error("添加事件失败:", error);
+  } finally {
+    await getEvents();
+  }
+}
+
+// 更新日程
+async function handleUpdateEvent(eventData: {
+  uid: string;
+  summary: string;
+  description: string;
+  dtStart: Date;
+  dtEnd: Date;
+}) {
+  try {
+    await updateEvent(eventData.uid, {
+      summary: eventData.summary,
+      description: eventData.description,
+      dtStart: eventData.dtStart,
+      dtEnd: eventData.dtEnd
+    });
+
+    showAddEventModal.value = false;
+    editingEvent.value = null;
+    console.log("事件已更新:", eventData.uid);
+  } catch (error) {
+    console.error("更新事件失败:", error);
+  } finally {
+    await getEvents();
+  }
 }
 </script>
 
-<template>
-  <Frame>
-    <Page actionBarHidden="true">
-      <GridLayout rows="auto, auto, auto, *, auto, auto" class="bg-gray-100">
-        <!-- 状态栏占位 -->
-        <StackLayout row="0" :height="statusBarHeight" class="bg-white" />
-
-        <!-- 头部标题 -->
-        <StackLayout row="1" class="bg-white p-4">
-          <Label :text="headerTitle" class="text-2xl font-bold text-gray-800" />
-        </StackLayout>
-
-        <!-- 视图切换器 -->
-        <GridLayout row="2" columns="*, *, *, *" class="bg-gray-100 mx-4 rounded-3xl p-1">
-          <Label
-            v-for="(tab, index) in viewTabs"
-            :key="tab.type"
-            :col="index"
-            :text="tab.label"
-            :class="[
-              'text-center py-2 text-sm text-gray-800 rounded-2xl',
-              currentView === tab.type ? 'bg-white font-medium' : ''
-            ]"
-            @tap="switchView(tab.type)"
-          />
-        </GridLayout>
-
-        <!-- 主内容区 -->
-        <ScrollView row="3">
-          <StackLayout ref="contentRef">
-            <!-- 月视图 -->
-            <StackLayout v-if="currentView === 'month' || currentView === 'week'">
-              <MonthView />
-
-              <!-- 今日信息 -->
-              <GridLayout columns="*, auto" class="py-3 px-4 bg-white">
-                <Label col="0" :text="todayInfo" class="text-sm text-gray-500" />
-                <Label col="1" text="›" class="text-lg text-gray-500" />
-              </GridLayout>
-
-              <!-- 事件卡片 -->
-              <StackLayout class="px-4">
-                <!-- 示例事件卡片 -->
-                <GridLayout columns="auto, *" class="bg-white rounded-2xl p-4 mb-3">
-                  <StackLayout col="0" class="w-1 h-10 bg-blue-500 rounded mr-3" />
-                  <StackLayout col="1" class="vertical-center">
-                    <Label text="【示例】会议提醒" class="text-base font-medium text-gray-800 mb-1" />
-                    <Label text="14:00 - 15:00" class="text-xs text-gray-500" />
-                  </StackLayout>
-                </GridLayout>
-              </StackLayout>
-            </StackLayout>
-
-            <!-- 年视图 -->
-            <YearView v-else-if="currentView === 'year'" @switch-to-month="switchView('month')" />
-
-            <!-- 日程视图占位 -->
-            <Label
-              v-else-if="currentView === 'schedule'"
-              text="日程视图开发中..."
-              class="text-base text-gray-500 text-center p-12"
-            />
-          </StackLayout>
-        </ScrollView>
-
-        <!-- FAB 浮动按钮 -->
-        <AbsoluteLayout row="4" class="h-0">
-          <StackLayout class="w-14 h-14 bg-white rounded-full mr-6 -mt-20" @tap="openAddEvent">
-            <Label text="+" class="text-3xl text-orange-500 text-center vertical-center" />
-          </StackLayout>
-        </AbsoluteLayout>
-
-        <!-- 底部导航 -->
-        <GridLayout row="5" columns="*, *" class="h-16 bg-white border-t border-gray-100">
-          <StackLayout col="0" class="horizontal-center vertical-center" @tap="switchNav('calendar')">
-            <Label
-              text="日程"
-              :class="['text-sm text-center', currentNav === 'calendar' ? 'text-orange-500' : 'text-gray-500']"
-            />
-          </StackLayout>
-          <StackLayout col="1" class="horizontal-center vertical-center" @tap="switchNav('today')">
-            <Label
-              text="智能安排"
-              :class="['text-sm text-center', currentNav === 'today' ? 'text-orange-500' : 'text-gray-500']"
-            />
-          </StackLayout>
-        </GridLayout>
-      </GridLayout>
-    </Page>
-  </Frame>
-</template>
-
-<style scoped>
-.vertical-center {
-  vertical-align: center;
-}
-</style>
+<style scoped></style>

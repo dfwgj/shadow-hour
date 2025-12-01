@@ -2,10 +2,11 @@
 /**
  * YearView - 年视图组件
  * 显示12个月的缩略日历
+ * @author xierfloat
  */
 
-import { computed, ref, watch } from "nativescript-vue";
-import { type TouchGestureEventData, CoreTypes } from "@nativescript/core";
+import { computed, ref } from "nativescript-vue";
+import { type TouchGestureEventData, CoreTypes, Screen } from "@nativescript/core";
 import type { WeekDay, MonthData } from "../../types/calendar";
 import { generateYearMonthData, getWeekDayNames } from "../../utils/date";
 
@@ -20,11 +21,14 @@ const props = withDefaults(
     firstDayOfWeek?: WeekDay;
     /** 是否高亮今天 */
     showToday?: boolean;
+    /** 自定义颜色 */
+    color?: string;
   }>(),
   {
     year: () => new Date().getFullYear(),
-    firstDayOfWeek: "SU",
-    showToday: true
+    firstDayOfWeek: "MO",
+    showToday: true,
+    color: "#F97316"
   }
 );
 
@@ -121,37 +125,55 @@ function onDayTap(month: number, day: number | null) {
 
 // 动画相关
 const contentRef = ref();
+const screenWidth = Screen.mainScreen.widthDIPs;
+const isAnimating = ref(false);
 
-// 监听年份变化，触发淡入淡出动画
-watch(
-  () => props.year,
-  (newYear, oldYear) => {
-    if (newYear !== oldYear) {
-      setTimeout(() => {
-        playFadeAnimation();
-      }, 10);
-    }
-  }
-);
-
-// 播放淡入动画
-function playFadeAnimation() {
+// 播放完整的滑动动画（退出 + 进入）
+async function playSlideAnimation(direction: "left" | "right", onMiddle?: () => void): Promise<void> {
   const view = contentRef.value?.nativeView;
-  if (!view) return;
+  if (!view || isAnimating.value) return;
 
-  view.opacity = 0;
+  isAnimating.value = true;
 
-  view.animate({
-    opacity: 1,
-    duration: 400,
+  // 退出方向：向左滑则当前内容向左退出，向右滑则向右退出
+  const exitX = direction === "left" ? -screenWidth * 0.3 : screenWidth * 0.3;
+  const enterX = direction === "left" ? screenWidth * 0.3 : -screenWidth * 0.3;
+  const duration = 150;
+
+  // 第一阶段：退出动画
+  await view.animate({
+    translate: { x: exitX, y: 0 },
+    opacity: 0,
+    duration,
     curve: CoreTypes.AnimationCurve.easeIn
   });
+
+  // 中间回调：更新数据
+  onMiddle?.();
+
+  // 设置进入起始位置
+  view.translateX = enterX;
+
+  // 第二阶段：进入动画
+  await view.animate({
+    translate: { x: 0, y: 0 },
+    opacity: 1,
+    duration,
+    curve: CoreTypes.AnimationCurve.easeOut
+  });
+
+  isAnimating.value = false;
 }
+
+// 暴露方法给父组件调用
+defineExpose({
+  playSlideAnimation
+});
 </script>
 
 <template>
   <ScrollView @touch="onTouch">
-    <StackLayout ref="contentRef" class="p-4 bg-gray-100">
+    <StackLayout ref="contentRef" class="p-2 bg-gray-100">
       <!-- 月份网格 3x4 -->
       <GridLayout columns="*, *, *" rows="auto, auto, auto, auto">
         <StackLayout
@@ -159,17 +181,15 @@ function playFadeAnimation() {
           :key="index"
           :col="index % 3"
           :row="Math.floor(index / 3)"
-          :class="[
-            'bg-white rounded-xl p-2 m-1',
-            checkIsCurrentMonth(monthData.month) ? 'border-2 border-orange-500' : ''
-          ]"
+          class="bg-white rounded-xl p-2 m-1"
+          :style="checkIsCurrentMonth(monthData.month) ? { borderWidth: 2, borderColor: props.color } : {}"
           @tap="onMonthTap(monthData.month)"
         >
           <!-- 月份标题 -->
           <Label
             :text="monthData.name"
             class="text-sm font-semibold"
-            :class="checkIsCurrentMonth(monthData.month) ? 'text-orange-500' : 'text-gray-800'"
+            :style="{ color: checkIsCurrentMonth(monthData.month) ? props.color : '#1f2937' }"
           />
 
           <!-- 星期标题 -->
@@ -190,10 +210,10 @@ function playFadeAnimation() {
               :key="dayIndex"
               :text="day !== null ? day.toString() : ''"
               :class="[
-                'w-[14.28%] text-xs text-center py-0.5',
-                checkIsToday(monthData.month, day) ? 'text-white bg-orange-500 rounded-lg' : '',
-                !checkIsToday(monthData.month, day) ? 'text-gray-800' : ''
+                'w-[14%] text-mxs text-center py-0.5',
+                checkIsToday(monthData.month, day) ? 'text-white rounded-lg' : 'text-gray-800'
               ]"
+              :style="checkIsToday(monthData.month, day) ? { backgroundColor: props.color } : {}"
               @tap="onDayTap(monthData.month, day)"
             />
           </WrapLayout>

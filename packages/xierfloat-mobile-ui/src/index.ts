@@ -21,3 +21,4 @@ export {
 
 // 组件导出
 export { YearView, MonthView } from "./components/calendar";
+export { EventCard } from "./components/card";

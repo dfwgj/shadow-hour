@@ -60,7 +60,7 @@ export function getWeekDayNames(firstDay: WeekDay = "SU"): string[] {
   const startIndex = WEEK_DAY_MAP[firstDay];
   const names: string[] = [];
   for (let i = 0; i < 7; i++) {
-    names.push(WEEK_DAY_NAMES_CN[(startIndex + i) % 7]);
+    names.push(WEEK_DAY_NAMES_CN[(startIndex + i) % 7] || "");
   }
   return names;
 }

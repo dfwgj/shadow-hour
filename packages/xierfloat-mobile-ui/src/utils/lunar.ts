@@ -1,6 +1,8 @@
 /**
  * 农历转换工具
  * 基于香港天文台农历算法
+ * 1900-2100年的农历数据
+ * @author xierfloat
  */
 
 import type { LunarDate } from "../types/calendar";
@@ -134,28 +136,28 @@ const SOLAR_FESTIVALS: Record<string, string> = {
 function getLunarYearDays(year: number): number {
   let sum = 348;
   for (let i = 0x8000; i > 0x8; i >>= 1) {
-    sum += LUNAR_INFO[year - 1900] & i ? 1 : 0;
+    sum += LUNAR_INFO[year - 1900]! & i ? 1 : 0;
   }
   return sum + getLeapDays(year);
 }
 
 function getLeapMonth(year: number): number {
-  return LUNAR_INFO[year - 1900] & 0xf;
+  return LUNAR_INFO[year - 1900]! & 0xf;
 }
 
 function getLeapDays(year: number): number {
   if (getLeapMonth(year)) {
-    return LUNAR_INFO[year - 1900] & 0x10000 ? 30 : 29;
+    return LUNAR_INFO[year - 1900]! & 0x10000 ? 30 : 29;
   }
   return 0;
 }
 
 function getLunarMonthDays(year: number, month: number): number {
-  return LUNAR_INFO[year - 1900] & (0x10000 >> month) ? 30 : 29;
+  return LUNAR_INFO[year - 1900]! & (0x10000 >> month) ? 30 : 29;
 }
 
 function getGanZhi(offset: number): string {
-  return TIAN_GAN[offset % 10] + DI_ZHI[offset % 12];
+  return TIAN_GAN[offset % 10]! + DI_ZHI[offset % 12];
 }
 
 function getYearGanZhi(year: number): string {
@@ -170,7 +172,7 @@ function getSolarTerm(year: number, month: number, day: number): string | undefi
     const idx = termIndex + i;
     if (idx >= SOLAR_TERM_INFO.length) continue;
 
-    const termTime = new Date(baseDate.getTime() + SOLAR_TERM_INFO[idx] * 60000);
+    const termTime = new Date(baseDate.getTime() + SOLAR_TERM_INFO[idx]! * 60000);
 
     if (termTime.getFullYear() === year && termTime.getMonth() === month - 1 && termTime.getDate() === day) {
       return SOLAR_TERMS[idx];
@@ -262,11 +264,11 @@ export function solarToLunar(date: Date): LunarDate {
     yearGanZhi,
     monthGanZhi: "",
     dayGanZhi: "",
-    zodiac,
+    zodiac: zodiac || "",
     lunarMonthName: (isLeapMonth ? "闰" : "") + LUNAR_MONTH_NAMES[lunarMonth - 1] + "月",
-    lunarDayName: LUNAR_DAY_NAMES[lunarDay - 1],
-    term,
-    festival
+    lunarDayName: LUNAR_DAY_NAMES[lunarDay - 1] || "",
+    term: term || "",
+    festival: festival || ""
   };
 }
 
