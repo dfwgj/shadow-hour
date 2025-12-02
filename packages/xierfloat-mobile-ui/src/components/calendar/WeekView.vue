@@ -1,24 +1,18 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 /**
- * MonthView - 月视图组件
- * 显示月份日历网格，支持农历
+ * WeekView - 周视图组件
+ * 显示当前周的日期
  * @author xierfloat
- * @Date 2025-12-1
+ * @Date 2025-12-2
  */
-
+import { DateCell, WeekDay } from "@/types/calendar";
 import { computed, PropType, ref } from "nativescript-vue";
 import { type TouchGestureEventData, CoreTypes, Screen } from "@nativescript/core";
-import type { WeekDay, DateCell } from "../../types/calendar";
-import { generateMonthGrid, getWeekDayNames } from "../../utils/date";
+import { generateWeekGrid, getWeekDayNames } from "../../utils/date";
 import { getLunarDayText, isSpecialDay } from "../../utils/lunar";
-// Props 定义
+//Props 定义
 const props = defineProps({
   // 定义属性
-  // 年份
-  year: {
-    type: Number,
-    default: () => new Date().getFullYear()
-  },
   // 月份（0-11）
   month: {
     type: Number,
@@ -55,15 +49,13 @@ const props = defineProps({
     default: () => "#F97316"
   }
 });
-
 // Emits 定义
 const emit = defineEmits<{
   /** 点击某天时触发 */
   (e: "select", date: Date): void;
-  /** 左右滑动切换月份 */
+  /** 左右滑动切换周 */
   (e: "swipe", direction: "left" | "right"): void;
 }>();
-
 // 处理 touch 手势实现左右滑动
 const touchStartX = ref(0);
 const touchStartY = ref(0);
@@ -92,34 +84,18 @@ function onTouch(args: TouchGestureEventData) {
     }
   }
 }
-
 // 星期标题
 const weekDayNames = computed(() => getWeekDayNames(props.firstDayOfWeek));
 
-// 月视图网格数据
-const monthGrid = computed(() =>
-  generateMonthGrid(props.year, props.month, props.selectedDate, props.firstDayOfWeek, props.showLunar)
+// 周视图数据
+const weekGrid = computed(() =>
+  generateWeekGrid(props.month, props.selectedDate, props.firstDayOfWeek, props.showLunar)
 );
-
-// 计算显示的周数
-const displayWeeks = computed(() => {
-  let lastWeekIndex = 5;
-  for (let i = 5; i >= 0; i--) {
-    const week = monthGrid.value[i];
-    if (week && week.days.some((day: DateCell) => day.isCurrentMonth)) {
-      lastWeekIndex = i;
-      break;
-    }
-  }
-  return monthGrid.value.slice(0, lastWeekIndex + 1);
-});
-
 // 获取农历显示文本
 function getLunarText(cell: DateCell): string {
   if (!cell.lunar) return "";
   return getLunarDayText(cell.lunar);
 }
-
 // 判断是否是特殊日期（节气或节日）
 function checkIsSpecialDay(cell: DateCell): boolean {
   if (!cell.lunar) return false;
@@ -185,25 +161,33 @@ defineExpose({
 </script>
 
 <template>
-  <StackLayout ref="contentRef" class="bg-white rounded-2xl" @touch="onTouch">
-    <!-- 星期标题行 -->
-    <GridLayout columns="*, *, *, *, *, *, *" class="pt-4 px-4 pb-2">
+  <StackLayout ref="contentRef" class="bg-white rounded-2xl flex" @touch="onTouch">
+    <!-- 星期标题行（左侧空白 + 7列星期） -->
+    <GridLayout columns="24, *, *, *, *, *, *, *" class="pt-4 px-2 pb-2">
+      <Label col="0" text="" />
       <Label
         v-for="(name, index) in weekDayNames"
         :key="index"
-        :col="index"
+        :col="index + 1"
         :text="name"
         class="text-center text-xs text-gray-500"
       />
     </GridLayout>
 
-    <!-- 日期网格 -->
-    <StackLayout class="px-4">
-      <GridLayout v-for="week in displayWeeks" :key="week.weekNumber" columns="*, *, *, *, *, *, *" class="h-14 mb-2">
+    <!-- 日期网格（左侧周数 + 7列日期） -->
+    <StackLayout class="px-2">
+      <GridLayout v-for="week in weekGrid" :key="week.weekNumber" columns="24, *, *, *, *, *, *, *" class="h-14 mb-2">
+        <!-- 左侧周数 -->
+        <StackLayout col="0" class="border-r border-gray-400" verticalAlignment="center">
+          <Label :text="week.weekNumber.toString()" class="text-xs text-gray-400 text-center" />
+          <Label text="周" class="text-xs text-gray-400 text-center" style="margin-top: -2" />
+        </StackLayout>
+
+        <!-- 日期单元格 -->
         <StackLayout
           v-for="(cell, dayIndex) in week.days"
           :key="dayIndex"
-          :col="dayIndex"
+          :col="dayIndex + 1"
           :class="['items-center justify-center rounded-2xl']"
           :style="{
             backgroundColor: cell.isToday ? props.color : '',
@@ -236,3 +220,7 @@ defineExpose({
     </StackLayout>
   </StackLayout>
 </template>
+
+<style scoped lang="less">
+/* 样式代码 */
+</style>

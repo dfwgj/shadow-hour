@@ -30,8 +30,22 @@
           <!-- 主内容区 -->
           <ScrollView row="3">
             <StackLayout ref="contentRef">
+              <!-- 年视图 -->
+              <YearView
+                v-if="currentView === 'year'"
+                class="m-4"
+                ref="yearViewRef"
+                :year="currentDate.getFullYear()"
+                :selected-date="selectedDate"
+                :first-day-of-week="firstDayOfWeek"
+                :show-today="true"
+                color="#F97316"
+                @select="onDateSelect"
+                @month-tap="onYearMonthTap"
+                @swipe="onYearSwipe"
+              />
               <!-- 月视图 -->
-              <StackLayout v-if="currentView === 'month' || currentView === 'week'">
+              <StackLayout v-else-if="currentView === 'month'">
                 <MonthView
                   class="m-4"
                   ref="monthViewRef"
@@ -64,22 +78,20 @@
                 </StackLayout>
                 <Label v-else text="暂无事件" class="text-base text-gray-500 text-center p-12" />
               </StackLayout>
-
-              <!-- 年视图 -->
-              <YearView
-                v-else-if="currentView === 'year'"
-                class="m-4"
-                ref="yearViewRef"
-                :year="currentDate.getFullYear()"
-                :selected-date="selectedDate"
-                :first-day-of-week="firstDayOfWeek"
-                :show-today="true"
-                color="#F97316"
-                @select="onDateSelect"
-                @month-tap="onYearMonthTap"
-                @swipe="onYearSwipe"
-              />
-
+              <!-- 周视图 -->
+              <StackLayout v-else-if="currentView === 'week'">
+                <WeekView
+                  class="m-4"
+                  ref="weekViewRef"
+                  :month="currentDate.getMonth()"
+                  :selected-date="selectedDate"
+                  :first-day-of-week="firstDayOfWeek"
+                  :show-lunar="showLunar"
+                  :show-outside-days="true"
+                  @select="onDateSelect"
+                  @swipe="onWeekSwipe"
+                />
+              </StackLayout>
               <!-- 日程视图占位 -->
               <Label
                 v-else-if="currentView === 'schedule'"
@@ -106,7 +118,14 @@
           </GridLayout>
 
           <GridLayout row="2" rowSpan="2" columns="*, auto" rows="*, auto" class="pointer-events-none">
-            <StackLayout col="1" row="1" class="w-14 h-14 bg-white rounded-full m-4 shadow-lg" @tap="openAddEvent">
+            <StackLayout
+              col="1"
+              row="1"
+              class="w-14 h-14 bg-white rounded-full m-4"
+              androidElevation="4"
+              boxShadow="0 4 10 rgba(0,0,0,0.15)"
+              @tap="openAddEvent"
+            >
               <Label text="+" class="text-4xl text-orange-500 text-center" style="line-height: 56" />
             </StackLayout>
           </GridLayout>
@@ -122,6 +141,9 @@
           @submit="handleAddEventSubmit"
           @update="handleUpdateEvent"
         />
+
+        <!-- Toast 容器 -->
+        <ToastContainer row="0" col="0" />
       </GridLayout>
     </Page>
   </Frame>
@@ -131,13 +153,14 @@ import { ref, computed, onMounted, watch } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
 import { solarToLunar, getYearInfo } from "../utils/lunar";
-import { MonthView, YearView, EventCard } from "@xierfloat-monorepo/mobile-ui";
+import { MonthView, YearView, WeekView, EventCard, Toast, ToastContainer } from "@xierfloat-monorepo/mobile-ui";
 import AddEventModal from "../components/AddEventModal.vue";
 import { CalendarEvent } from "~/types/calendar";
 import { Dialogs } from "@nativescript/core";
 
 const monthViewRef = ref<InstanceType<typeof MonthView> | null>(null);
 const yearViewRef = ref<InstanceType<typeof YearView> | null>(null);
+const weekViewRef = ref<InstanceType<typeof WeekView> | null>(null);
 // 视图类型
 type ViewType = "year" | "month" | "week" | "schedule";
 const currentView = ref<ViewType>("month");
@@ -298,7 +321,16 @@ function onSwipe(direction: "left" | "right") {
     currentDate.value = new Date(current.getFullYear(), newMonth, 1);
   });
 }
-
+// 处理周视图左右滑动切换周数
+import { addDays } from "@xierfloat-monorepo/mobile-ui";
+function onWeekSwipe(direction: "left" | "right") {
+  weekViewRef.value?.playSlideAnimation(direction, () => {
+    const days = direction === "left" ? 7 : -7;
+    selectedDate.value = addDays(selectedDate.value, days);
+    // 同步更新 currentDate
+    currentDate.value = new Date(selectedDate.value.getFullYear(), selectedDate.value.getMonth(), 1);
+  });
+}
 // 处理年视图中月份点击（切换到月视图）
 function onYearMonthTap(month: number) {
   const newDate = new Date(currentDate.value.getFullYear(), month, 1);
@@ -326,10 +358,11 @@ async function onDeleteEvent(uid: string) {
     });
     if (confirmed) {
       await deleteEvent(uid);
-      console.log("事件已删除:", uid);
+      Toast.success("删除成功");
       await getEvents();
     }
   } catch (error) {
+    Toast.error("删除失败");
     console.error("删除事件失败:", error);
   }
 }
@@ -345,8 +378,9 @@ async function handleAddEventSubmit(eventData: { summary: string; description: s
     });
 
     showAddEventModal.value = false;
-    console.log("事件已添加");
+    Toast.success("添加成功");
   } catch (error) {
+    Toast.error("添加失败");
     console.error("添加事件失败:", error);
   } finally {
     await getEvents();
@@ -371,6 +405,7 @@ async function handleUpdateEvent(eventData: {
 
     showAddEventModal.value = false;
     editingEvent.value = null;
+    Toast.success("更新成功");
     console.log("事件已更新:", eventData.uid);
   } catch (error) {
     console.error("更新事件失败:", error);

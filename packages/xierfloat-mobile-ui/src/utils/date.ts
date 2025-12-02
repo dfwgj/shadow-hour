@@ -64,6 +64,79 @@ export function getWeekDayNames(firstDay: WeekDay = "SU"): string[] {
   }
   return names;
 }
+/**
+ * 获取日期所在的年周数（ISO 8601 标准）
+ * 第一周是包含该年第一个周四的那一周
+ */
+export function getWeekOfYear(date: Date, firstDay: WeekDay = "MO"): number {
+  const target = new Date(date);
+  // 设置到本周的周四（ISO标准：周四决定周数归属）
+  const dayOfWeek = target.getDay();
+  const firstDayIndex = WEEK_DAY_MAP[firstDay];
+
+  // 计算本周周四的日期
+  // 从 firstDay 开始，周四是第 (4 - firstDayIndex + 7) % 7 天
+  const thursdayOffset = (4 - firstDayIndex + 7) % 7;
+  const currentDayOffset = (dayOfWeek - firstDayIndex + 7) % 7;
+  const daysToThursday = thursdayOffset - currentDayOffset;
+
+  target.setDate(target.getDate() + daysToThursday);
+
+  // 获取该周四所在年份的第一天
+  const yearStart = new Date(target.getFullYear(), 0, 1);
+
+  // 计算从年初到该周四的天数
+  const daysDiff = Math.floor((target.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000));
+
+  // 计算周数（从1开始）
+  return Math.ceil((daysDiff + 1) / 7);
+}
+
+/**
+ * 生成周视图的日期网格
+ */
+export function generateWeekGrid(
+  month: number,
+  selectedDate: Date,
+  firstDay: WeekDay = "MO",
+  showLunar: boolean = true
+): WeekRow[] {
+  const selectedYear = selectedDate.getFullYear();
+  const selectedMonth = selectedDate.getMonth();
+  const selectedDay = selectedDate.getDate();
+  const firstDayIndex = WEEK_DAY_MAP[firstDay];
+  const dayOfWeek = selectedDate.getDay(); // 0-6, 0表示周日
+  const daysFromPrevMonth = (dayOfWeek - firstDayIndex + 7) % 7;
+  const weekStartDate = new Date(selectedYear, selectedMonth, selectedDay - daysFromPrevMonth);
+  const weekEndDate = addDays(weekStartDate, 6);
+
+  // 计算该周是一年中的第几周
+  const weekNumber = getWeekOfYear(weekStartDate, firstDay);
+
+  const weeks: WeekRow[] = [];
+  let currentDate = weekStartDate;
+  while (currentDate <= weekEndDate) {
+    const days: DateCell[] = [];
+    for (let day = 0; day < 7; day++) {
+      const cellDate = new Date(currentDate);
+      days.push({
+        date: cellDate,
+        day: cellDate.getDate(),
+        isCurrentMonth: cellDate.getMonth() === month,
+        isToday: isToday(cellDate),
+        isSelected: selectedDate ? isSameDay(cellDate, selectedDate) : false,
+        isWeekend: isWeekend(cellDate),
+        lunar: showLunar ? solarToLunar(cellDate) : undefined
+      });
+      currentDate = addDays(currentDate, 1);
+    }
+    weeks.push({
+      weekNumber,
+      days
+    });
+  }
+  return weeks;
+}
 
 /**
  * 生成月视图的日期网格
@@ -72,7 +145,7 @@ export function generateMonthGrid(
   year: number,
   month: number,
   selectedDate: Date | undefined,
-  firstDay: WeekDay = "SU",
+  firstDay: WeekDay = "MO",
   showLunar: boolean = true
 ): WeekRow[] {
   const firstDayOfMonth = new Date(year, month, 1);
