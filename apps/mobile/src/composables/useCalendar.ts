@@ -22,7 +22,8 @@ import {
   updateEvent as dbUpdateEvent,
   deleteEvent as dbDeleteEvent,
   getAllEvents,
-  getEventsByDate
+  getEventsByDate,
+  getEventsByDateRange
 } from "../services/database/index";
 
 // 全局状态（单例模式）
@@ -190,6 +191,20 @@ export function useCalendar() {
     }
   }
 
+  // 加载指定周的事件
+  async function loadEventsByWeek(date: Date) {
+    try {
+      const weekStart = getWeekStart(date, firstDayOfWeek.value);
+      const weekEnd = getWeekEnd(date, firstDayOfWeek.value);
+      // weekEnd 需要加一天，因为查询是 dt_start < endDate
+      const weekEndPlusOne = addDays(weekEnd, 1);
+      return await getEventsByDateRange(weekStart, weekEndPlusOne);
+    } catch (error) {
+      console.error("[useCalendar] 加载周事件失败:", error);
+      return [];
+    }
+  }
+
   // 添加事件
   async function addEvent(event: Omit<CalendarEvent, "uid" | "created" | "lastModified">) {
     try {
@@ -284,6 +299,7 @@ export function useCalendar() {
     init,
     loadAllEvents,
     loadEventsByDate,
+    loadEventsByWeek,
     goToPrevious,
     goToNext,
     goToToday,

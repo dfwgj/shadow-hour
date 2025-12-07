@@ -13,6 +13,15 @@
 	<uses-permission android:name="android.permission.INTERNET"/>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
+	<!-- 通知权限 (Android 13+) -->
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+	<!-- 精确闹钟权限 (用于定时通知) -->
+	<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+	<!-- 开机启动 (可选，用于重新调度通知) -->
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+	<!-- 振动权限 -->
+	<uses-permission android:name="android.permission.VIBRATE"/>
+
 	<application
 		android:name="com.tns.NativeScriptApplication"
 		android:allowBackup="true"

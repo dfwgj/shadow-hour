@@ -22,7 +22,7 @@ export {
 } from "./utils/date";
 
 // 组件导出
-export { YearView, MonthView, WeekView } from "./components/calendar";
+export { YearView, MonthView, WeekView, WeekScheduleGrid } from "./components/calendar";
 export { EventCard } from "./components/card";
 export { ToastContainer, Toast, useToast } from "./components/toast";
 export type { ToastType, ToastPosition, ToastOptions, ToastInstance, IToastService } from "./components/toast";

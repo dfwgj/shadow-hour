@@ -6,6 +6,17 @@
 import { ref, computed, watch } from "nativescript-vue";
 import type { CalendarEvent } from "~/types/calendar";
 
+// 提醒时间选项
+const reminderOptions = [
+  { label: "日程开始时", value: 0 },
+  { label: "前5分钟", value: 5 },
+  { label: "前10分钟", value: 10 },
+  { label: "前15分钟", value: 15 },
+  { label: "前30分钟", value: 30 },
+  { label: "前1小时", value: 60 },
+  { label: "前2小时", value: 120 },
+];
+
 const props = defineProps<{
   visible: boolean;
   selectedDate?: Date;
@@ -22,6 +33,8 @@ const emit = defineEmits<{
       description: string;
       dtStart: Date;
       dtEnd: Date;
+      enableReminder: boolean;
+      reminderMinutes: number;
     }
   ): void;
   (
@@ -32,6 +45,8 @@ const emit = defineEmits<{
       description: string;
       dtStart: Date;
       dtEnd: Date;
+      enableReminder: boolean;
+      reminderMinutes: number;
     }
   ): void;
 }>();
@@ -42,11 +57,22 @@ const isEditMode = computed(() => !!props.event);
 // 弹窗标题
 const modalTitle = computed(() => (isEditMode.value ? "查看日程" : "新建日程"));
 
+// 当前提醒选项标签
+const currentReminderLabel = computed(() => {
+  const option = reminderOptions.find((o) => o.value === reminderMinutes.value);
+  return option ? option.label : "前10分钟";
+});
+
 // 表单数据
 const summary = ref("");
 const description = ref("");
 const startDate = ref(new Date());
 const endDate = ref(new Date());
+
+// 推送提醒
+const enableReminder = ref(true); // 默认开启
+const reminderMinutes = ref(10); // 默认提前10分钟
+const showReminderPicker = ref(false);
 
 // 错误信息
 const errorMessage = ref("");
@@ -103,6 +129,20 @@ function fillEventData(event: CalendarEvent) {
   startDate.value = new Date(event.dtStart);
   endDate.value = event.dtEnd ? new Date(event.dtEnd) : new Date(event.dtStart);
   errorMessage.value = "";
+
+  // 提醒设置：从 alarms 中获取
+  if (event.alarms && event.alarms.length > 0) {
+    enableReminder.value = true;
+    const alarm = event.alarms[0];
+    if (alarm.trigger && typeof alarm.trigger === "object" && "minutes" in alarm.trigger) {
+      reminderMinutes.value = Math.abs(alarm.trigger.minutes);
+    } else {
+      reminderMinutes.value = 10;
+    }
+  } else {
+    enableReminder.value = false;
+    reminderMinutes.value = 10;
+  }
 }
 
 // 重置表单
@@ -134,6 +174,10 @@ function resetForm() {
   summary.value = "";
   description.value = "";
   errorMessage.value = "";
+
+  // 重置提醒设置为默认值
+  enableReminder.value = true;
+  reminderMinutes.value = 10;
 }
 
 // 验证表单
@@ -173,7 +217,9 @@ function handleSubmit() {
       summary: summary.value.trim(),
       description: description.value.trim(),
       dtStart: startDate.value,
-      dtEnd: endDate.value
+      dtEnd: endDate.value,
+      enableReminder: enableReminder.value,
+      reminderMinutes: reminderMinutes.value
     });
   } else {
     // 新增模式：发出 submit 事件
@@ -181,9 +227,17 @@ function handleSubmit() {
       summary: summary.value.trim(),
       description: description.value.trim(),
       dtStart: startDate.value,
-      dtEnd: endDate.value
+      dtEnd: endDate.value,
+      enableReminder: enableReminder.value,
+      reminderMinutes: reminderMinutes.value
     });
   }
+}
+
+// 选择提醒时间
+function selectReminderOption(minutes: number) {
+  reminderMinutes.value = minutes;
+  showReminderPicker.value = false;
 }
 
 // 关闭弹窗
@@ -313,6 +367,29 @@ function onTimeChange(args: any) {
           </GridLayout>
         </StackLayout>
 
+        <!-- 提醒设置 -->
+        <StackLayout class="mb-4">
+          <Label text="提醒" class="text-sm text-gray-500 mb-2" />
+          <GridLayout columns="auto, *, auto" class="bg-gray-100 rounded-xl p-3">
+            <Label col="0" text="开启提醒" class="text-base text-gray-800" />
+            <Switch
+              col="2"
+              v-model="enableReminder"
+             
+            />
+          </GridLayout>
+          <!-- 提醒时间选择（仅在开启时显示） -->
+          <GridLayout
+            v-if="enableReminder"
+            columns="*, auto"
+            class="bg-gray-100 rounded-xl p-3 mt-2"
+            @tap="showReminderPicker = true"
+          >
+            <Label col="0" text="提前提醒" class="text-base text-gray-800" />
+            <Label col="1" :text="currentReminderLabel" class="text-base text-orange-500" />
+          </GridLayout>
+        </StackLayout>
+
         <!-- 描述输入 -->
         <StackLayout class="mb-2">
           <Label text="备注" class="text-sm text-gray-500 mb-2" />
@@ -362,6 +439,44 @@ function onTimeChange(args: any) {
           class="p-4"
           @timeChange="onTimeChange"
         />
+      </StackLayout>
+    </GridLayout>
+
+    <!-- 提醒时间选择器弹窗 -->
+    <GridLayout v-if="showReminderPicker" row="0" col="0" rows="*, auto" columns="*">
+      <!-- 选择器遮罩 -->
+      <StackLayout row="0" rowSpan="2" col="0" class="bg-black opacity-30" @tap="showReminderPicker = false" />
+
+      <!-- 选择器内容 -->
+      <StackLayout row="1" col="0" class="bg-white rounded-t-2xl">
+        <!-- 选择器标题栏 -->
+        <GridLayout columns="auto, *, auto" class="p-4 border-b border-gray-100">
+          <Label col="0" text="取消" class="text-base text-gray-500" @tap="showReminderPicker = false" />
+          <Label col="1" text="选择提醒时间" class="text-base font-medium text-center text-gray-800" />
+          <Label col="2" text="" />
+        </GridLayout>
+
+        <!-- 提醒选项列表 -->
+        <ScrollView height="300">
+          <StackLayout class="p-2">
+            <StackLayout
+              v-for="option in reminderOptions"
+              :key="option.value"
+              class="p-4 border-b border-gray-100"
+              @tap="selectReminderOption(option.value)"
+            >
+              <GridLayout columns="*, auto">
+                <Label col="0" :text="option.label" class="text-base text-gray-800" />
+                <Label
+                  v-if="reminderMinutes === option.value"
+                  col="1"
+                  text="✓"
+                  class="text-orange-500 text-lg"
+                />
+              </GridLayout>
+            </StackLayout>
+          </StackLayout>
+        </ScrollView>
       </StackLayout>
     </GridLayout>
   </GridLayout>

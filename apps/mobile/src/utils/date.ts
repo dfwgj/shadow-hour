@@ -130,19 +130,21 @@ export function addDays(date: Date, days: number): Date {
 /**
  * 获取某周的起始日期
  */
-export function getWeekStart(date: Date, firstDay: WeekDay = 'SU'): Date {
+export function getWeekStart(date: Date, firstDay: WeekDay = 'MO'): Date {
   const result = new Date(date)
   const day = result.getDay()
   const firstDayIndex = WEEK_DAY_MAP[firstDay]
   const diff = (day - firstDayIndex + 7) % 7
   result.setDate(result.getDate() - diff)
+  // 设置为当天的 00:00:00
+  result.setHours(0, 0, 0, 0)
   return result
 }
 
 /**
  * 获取某周的结束日期
  */
-export function getWeekEnd(date: Date, firstDay: WeekDay = 'SU'): Date {
+export function getWeekEnd(date: Date, firstDay: WeekDay = 'MO'): Date {
   const start = getWeekStart(date, firstDay)
   return addDays(start, 6)
 }

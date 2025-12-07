@@ -132,6 +132,9 @@ importers:
       '@nativescript/core':
         specifier: ~8.8.6
         version: 8.8.6
+      '@nativescript/local-notifications':
+        specifier: ^6.4.0
+        version: 6.4.0
       nativescript-vue:
         specifier: 3.0.0-rc.3
         version: 3.0.0-rc.3(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)
@@ -161,9 +164,17 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  apps/mobile/platforms/android/app/build/intermediates/assets/debug/mergeDebugAssets/app: {}
+  apps/mobile/platforms/android/app/build/intermediates/assets/debug/mergeDebugAssets/app:
+    dependencies:
+      '@nativescript/local-notifications':
+        specifier: ^6.4.0
+        version: 6.4.0
 
-  apps/mobile/platforms/android/app/src/main/assets/app: {}
+  apps/mobile/platforms/android/app/src/main/assets/app:
+    dependencies:
+      '@nativescript/local-notifications':
+        specifier: ^6.4.0
+        version: 6.4.0
 
   packages/xierfloat-mobile-ui:
     dependencies:
@@ -846,6 +857,9 @@ packages:
     resolution: {integrity: sha512-B9nniPPRhPf5Hf2cyvy72SNEg4iKQEW6pig9nwrM4DJlmOMZudifOMPBoJuK6JcTaLATIOGRPkclfosNUALnLQ==}
     hasBin: true
 
+  '@nativescript-community/perms@2.3.6':
+    resolution: {integrity: sha512-KtAyY2fCjKL19HQ3AslQKH4h+Sao0u4G4AgoF+SkRcAMGxqQd8covjpJ2hN3AFm8TDkqbSm3o0NDMR1dYVr/3A==}
+
   '@nativescript-community/sqlite@3.5.1':
     resolution: {integrity: sha512-kZk4ICz2NewqEel+S7jh5RFaPuZe6bnnNPgYXj4CarWxcEjkUCokYMp6l2ItpphKkknemssi/uXMNk9QVJgN5g==}
     peerDependencies:
@@ -860,6 +874,12 @@ packages:
 
   '@nativescript/hook@2.0.0':
     resolution: {integrity: sha512-v3Hj3Zpd69sQJfFpDNXonV0EjO1a2OL4l48wlo1Ycsqk4r7RY822d/irFTjt0LllRG0OcdEGgfG6wKb0YgPyHw==}
+
+  '@nativescript/local-notifications@6.4.0':
+    resolution: {integrity: sha512-Ey72PbQrxaMbKq/yewbCU3tDjY66N0DUsAsNqXLdgjNZIBOKHAGvk+wpAHyZuFvMHrN89EVpAxGEddRK7YhXBg==}
+
+  '@nativescript/shared-notification-delegate@1.0.2':
+    resolution: {integrity: sha512-Wh6F1WH9Aj23K+nyolA5MrA6MXku/5rSPt9r20ekbyx2FkRpBr0stjg4uD6KSyUvWY8YT+KQ9WlOUzhq7g7Ycw==}
 
   '@nativescript/tailwind@2.1.1':
     resolution: {integrity: sha512-Fo+E8JG0MbZLRLcvIWPiI2P4SqJ/S6u4uzceIun5wfmm3LG4gErF4ivvHuJu/IdwDKCGw5FNLO21e+M0O/P5/w==}
@@ -6082,6 +6102,8 @@ snapshots:
       chokidar: 3.6.0
       command-line-args: 5.2.1
 
+  '@nativescript-community/perms@2.3.6': {}
+
   '@nativescript-community/sqlite@3.5.1(@nano-sql/core@2.3.7)(typeorm@0.3.27(reflect-metadata@0.2.2))':
     dependencies:
       '@nano-sql/core': 2.3.7
@@ -6104,6 +6126,13 @@ snapshots:
     dependencies:
       glob: 7.2.3
       mkdirp: 1.0.4
+
+  '@nativescript/local-notifications@6.4.0':
+    dependencies:
+      '@nativescript-community/perms': 2.3.6
+      '@nativescript/shared-notification-delegate': 1.0.2
+
+  '@nativescript/shared-notification-delegate@1.0.2': {}
 
   '@nativescript/tailwind@2.1.1(postcss@8.5.6)':
     dependencies:

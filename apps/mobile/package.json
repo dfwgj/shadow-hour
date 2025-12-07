@@ -10,6 +10,7 @@
   "dependencies": {
     "@nativescript-community/sqlite": "^3.5.1",
     "@nativescript/core": "~8.8.6",
+    "@nativescript/local-notifications": "^6.4.0",
     "nativescript-vue": "3.0.0-rc.3"
   },
   "devDependencies": {
