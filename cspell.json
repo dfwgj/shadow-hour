@@ -38,14 +38,26 @@
   "words": [
     "AUTOINCREMENT",
     "cdylib",
+    "combinators",
+    "deepseek",
+    "duckduckgo",
+    "Gridlayout",
+    "kimi",
+    "moonshot",
     "nativescript",
+    "notif",
     "nscalendar",
+    "ollama",
     "pxtorem",
+    "qwen",
     "rlib",
     "rrule",
     "serde",
+    "sqlitedatabase",
     "staticlib",
     "Tauri",
+    "tcamp",
+    "zhipu",
     "zindex"
   ]
 }

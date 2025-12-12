@@ -9,7 +9,10 @@
   ],
   "scripts": {},
   "peerDependencies": {
-    "nativescript-vue": "^3.0.0"
+    "@nativescript/core": ">=8.0.0",
+    "nativescript-vue": "^3.0.0",
+    "@nativescript-community/sqlite": "^3.5.1",
+    "@nativescript/local-notifications": ">=6.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

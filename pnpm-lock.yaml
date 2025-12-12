@@ -164,20 +164,37 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  apps/mobile/platforms/android/app/build/intermediates/assets/debug/mergeDebugAssets/app:
-    dependencies:
-      '@nativescript/local-notifications':
-        specifier: ^6.4.0
-        version: 6.4.0
+  apps/mobile/platforms/android/app/build/intermediates/assets/debug/mergeDebugAssets/app: {}
 
-  apps/mobile/platforms/android/app/src/main/assets/app:
+  apps/mobile/platforms/android/app/src/main/assets/app: {}
+
+  packages/xierfloat-mobile-ai:
     dependencies:
-      '@nativescript/local-notifications':
-        specifier: ^6.4.0
-        version: 6.4.0
+      '@nativescript/core':
+        specifier: '>=8.0.0'
+        version: 8.8.6
+      nativescript-vue:
+        specifier: ^3.0.0
+        version: 3.0.2(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)
+      vue:
+        specifier: ^3.0.0
+        version: 3.5.25(typescript@5.9.3)
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
 
   packages/xierfloat-mobile-ui:
     dependencies:
+      '@nativescript-community/sqlite':
+        specifier: ^3.5.1
+        version: 3.5.1(@nano-sql/core@2.3.7)(typeorm@0.3.27(reflect-metadata@0.2.2))
+      '@nativescript/core':
+        specifier: '>=8.0.0'
+        version: 8.8.6
+      '@nativescript/local-notifications':
+        specifier: '>=6.0.0'
+        version: 6.4.0
       nativescript-vue:
         specifier: ^3.0.0
         version: 3.0.2(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)

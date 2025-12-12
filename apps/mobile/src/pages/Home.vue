@@ -180,7 +180,7 @@
   </Frame>
 </template>
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "nativescript-vue";
+import { ref, computed, onMounted, watch, $navigateTo } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
 import { solarToLunar, getYearInfo } from "../utils/lunar";
@@ -195,6 +195,7 @@ import {
   WeekScheduleGrid
 } from "@xierfloat-monorepo/mobile-ui";
 import AddEventModal from "../components/AddEventModal.vue";
+import AIChat from "./AIChat.vue";
 import { CalendarEvent } from "~/types/calendar";
 import { Dialogs } from "@nativescript/core";
 
@@ -359,7 +360,22 @@ async function switchView(type: ViewType) {
 
 // 底部导航切换
 function switchNav(type: NavType) {
+  if (type === 'today') {
+    // 跳转到 AI 聊天页面
+    navigateToAIChat();
+    return;
+  }
   currentNav.value = type;
+}
+
+// 跳转到 AI 聊天页面
+function navigateToAIChat() {
+  $navigateTo(AIChat, {
+    transition: {
+      name: 'slide',
+      duration: 200
+    }
+  });
 }
 
 // 打开新建日程弹窗
