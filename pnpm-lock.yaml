@@ -154,6 +154,9 @@ importers:
       '@types/node':
         specifier: ~17.0.21
         version: 17.0.45
+      '@xierfloat-monorepo/mobile-ai':
+        specifier: workspace:*
+        version: link:../../packages/xierfloat-mobile-ai
       '@xierfloat-monorepo/mobile-ui':
         specifier: workspace:*
         version: link:../../packages/xierfloat-mobile-ui
@@ -195,6 +198,9 @@ importers:
       '@nativescript/local-notifications':
         specifier: '>=6.0.0'
         version: 6.4.0
+      '@xierfloat-monorepo/mobile-ai':
+        specifier: workspace:*
+        version: link:../xierfloat-mobile-ai
       nativescript-vue:
         specifier: ^3.0.0
         version: 3.0.2(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)

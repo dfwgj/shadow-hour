@@ -62,30 +62,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
-import { useChat } from '@xierfloat-monorepo/mobile-ai'
-import type { Message } from '@xierfloat-monorepo/mobile-ai/types'
-import ChatMessage from './ChatMessage.vue'
+import { ref, computed, watch, onMounted, nextTick } from "nativescript-vue";
+import { useChat } from "@xierfloat-monorepo/mobile-ai";
+import type { Message } from "@xierfloat-monorepo/mobile-ai";
+import ChatMessage from "./ChatMessage.vue";
 
 // Props
 interface Props {
-  sessionId?: string
+  sessionId?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  sessionId: ''
-})
+  sessionId: ""
+});
 
 // 初始化聊天
 const chat = useChat({
   config: {
-    // 默认使用 OpenAI 配置，实际中需从存储读取
-    id: 'default',
-    name: 'GPT-4',
-    provider: 'openai',
-    apiKey: 'sk-", // 需要用户配置
-    model: 'gpt-4',
-    baseUrl: 'https://api.openai.com/v1',
+    id: "default",
+    name: "GPT-4",
+    provider: "openai",
+    apiKey: "sk-",
+    model: "gpt-4",
+    baseUrl: "https://api.openai.com/v1",
     maxTokens: 4096,
     temperature: 0.7,
     supportsStreaming: true,
@@ -93,92 +92,93 @@ const chat = useChat({
     supportsVision: false
   },
   useSchedulerPrompt: true
-})
+});
 
 // 响应式数据
-const inputText = ref('')
-const scrollView = ref()
-const currentTask = ref('')
+const inputText = ref("");
+const scrollView = ref();
+const currentTask = ref("");
 
 // Computed
-const messages = computed(() => chat.messages.value)
-const isProcessing = computed(() => chat.isProcessing.value)
-const canSend = computed(() => chat.canSend.value)
-const currentSession = computed(() => chat.session.value)
+const messages = computed(() => chat.messages.value);
+const isProcessing = computed(() => chat.isProcessing.value);
+const canSend = computed(() => chat.canSend.value);
+const currentSession = computed(() => chat.session.value);
 
 // 快捷操作
 const quickActions = [
-  { label: '查看今天日程', prompt: '帮我查看今天的日程安排' },
-  { label: '创建会议', prompt: '帮我创建一个会议' },
-  { label: '设置提醒', prompt: '设置一个提醒' },
-  { label: '搜索信息', prompt: '搜索相关信息' }
-]
+  { label: "查看今天日程", prompt: "帮我查看今天的日程安排" },
+  { label: "创建会议", prompt: "帮我创建一个会议" },
+  { label: "设置提醒", prompt: "设置一个提醒" },
+  { label: "搜索信息", prompt: "搜索相关信息" }
+];
 
 // 方法
 const handleSend = async () => {
   if (!inputText.value.trim() || !canSend.value || isProcessing.value) {
-    return
+    return;
   }
 
-  const text = inputText.value.trim()
-  inputText.value = ''
+  const text = inputText.value.trim();
+  inputText.value = "";
 
   try {
-    await chat.send(text)
-    await scrollToBottom()
+    await chat.send(text);
+    await scrollToBottom();
   } catch (error) {
-    console.error('发送消息失败:', error)
+    console.error("发送消息失败:", error);
     // 显示错误提示
   }
-}
+};
 
 const handleQuickAction = async (action: { label: string; prompt: string }) => {
-  inputText.value = action.prompt
-  await handleSend()
-}
+  inputText.value = action.prompt;
+  await handleSend();
+};
 
 const scrollToBottom = async () => {
-  await nextTick()
+  await nextTick();
   if (scrollView.value?.nativeView) {
-    scrollView.value.nativeView.scrollToVerticalOffset(
-      scrollView.value.nativeView.scrollableHeight,
-      false
-    )
+    scrollView.value.nativeView.scrollToVerticalOffset(scrollView.value.nativeView.scrollableHeight, false);
   }
-}
+};
 
 // 监听消息变化，自动滚动到底部
-watch(messages, () => {
-  scrollToBottom()
-}, { deep: true })
+watch(
+  messages,
+  () => {
+    scrollToBottom();
+  },
+  { deep: true }
+);
 
 // 监听流事件，更新任务状态
-chat.subscribe((event) => {
+chat.subscribe(event => {
   switch (event.type) {
-    case 'thinking':
-      currentTask.value = '思考中'
-      break
-    case 'responding':
-      currentTask.value = '生成回复'
-      break
-    case 'tool_calling':
-      currentTask.value = `调用工具: ${event.data.toolName}`
-      break
-    case 'text_delta':
-      currentTask.value = '回复中'
-      break
+    case "thinking":
+      currentTask.value = "思考中";
+      break;
+    case "responding":
+      currentTask.value = "生成回复";
+      break;
+    case "tool_calling":
+      currentTask.value = `调用工具: ${event.data.toolName}`;
+      break;
+    case "text_delta":
+      currentTask.value = "回复中";
+      break;
   }
-})
+});
 
 // 初始化
 onMounted(async () => {
   if (props.sessionId) {
-    await chat.switchSession(props.sessionId)
+    await chat.switchSession(props.sessionId);
   } else {
     // 创建新会话
-    await chat.createSession('新对话')
+    await chat.createSession("新对话");
   }
-})
+});
 </script>
 
 <style scoped>

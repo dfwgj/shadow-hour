@@ -4,7 +4,7 @@
     "module": "esnext",
     "target": "esnext",
     "types": [],
-    "lib": ["esnext"],
+    "lib": ["esnext", "dom"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,

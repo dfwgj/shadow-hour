@@ -241,9 +241,10 @@ export class EventRepository implements IEventRepository {
    */
   async findByDateRange(startDate: Date, endDate: Date): Promise<CalendarEvent[]> {
     const db = this.getDb();
+    console.log("[EventRepository] 查询范围:", startDate.getTime(), "至", endDate.getTime());
     const rows = await db.select(
       `SELECT * FROM events
-       WHERE dt_start >= ? AND dt_start < ?
+       WHERE dt_start >= ? AND dt_start <= ?
        ORDER BY dt_start ASC`,
       [startDate.getTime(), endDate.getTime()]
     );

@@ -23,7 +23,8 @@ export default defineConfig(
     },
     rules: {
       // 自定义
-      "no-var": "error" // 不允许使用var
+      "no-var": "error", // 不允许使用var
+      "@typescript-eslint/no-explicit-any": "off"
     }
   },
   // 前端配置

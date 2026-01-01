@@ -14,7 +14,7 @@ export {
   createCalendarUpdateHandler,
   createCalendarDeleteHandler,
   createCalendarTools
-} from './CalendarTool'
+} from "./CalendarTool";
 
 export {
   type NotificationService,
@@ -28,13 +28,29 @@ export {
   createNotificationCancelHandler,
   createNotificationListHandler,
   createNotificationTools
-} from './NotificationTool'
+} from "./NotificationTool";
 
 export {
   type WebSearchService,
   type SearchResult,
+  type SearchServiceConfig,
+  type SearXNGConfig,
+  type SearXNGResult,
   webSearchDefinition,
   createWebSearchHandler,
   createWebSearchTools,
+  createSearchService,
+  BingSearchService,
+  BingCNSearchService,
+  SearXNGSearchService,
   MockWebSearchService
-} from './WebSearchTool'
+} from "./WebSearchTool";
+
+export {
+  type WebFetchResult,
+  type WebFetchConfig,
+  webFetchDefinition,
+  WebFetchService,
+  createWebFetchHandler,
+  createWebFetchTools
+} from "./WebFetchTool";

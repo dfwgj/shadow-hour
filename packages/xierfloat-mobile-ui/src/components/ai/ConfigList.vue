@@ -16,13 +16,7 @@
             />
             <Label :text="currentConfig.name" col="1" row="0" class="config-name" />
             <Label :text="currentConfig.model" col="1" row="1" class="config-model" />
-            <Button
-              col="1"
-              row="2"
-              :text="isEditing ? '保存' : '编辑'"
-              @tap="toggleEdit"
-              class="edit-button"
-            />
+            <Button col="1" row="2" :text="isEditing ? '保存' : '编辑'" @tap="toggleEdit" class="edit-button" />
           </GridLayout>
         </StackLayout>
       </CardView>
@@ -32,12 +26,7 @@
         <StackLayout padding="16">
           <GridLayout columns="*, auto" class="section-header">
             <Label text="所有配置" col="0" class="section-title" />
-            <Button
-              col="1"
-              text="添加"
-              @tap="$emit('add-config')"
-              class="add-button"
-            />
+            <Button col="1" text="添加" @tap="$emit('add-config')" class="add-button" />
           </GridLayout>
 
           <StackLayout v-if="configs.length === 0" class="empty-state">
@@ -45,12 +34,7 @@
           </StackLayout>
 
           <StackLayout v-else>
-            <StackLayout
-              v-for="config in configs"
-              :key="config.id"
-              class="config-item"
-              @tap="selectConfig(config)"
-            >
+            <StackLayout v-for="config in configs" :key="config.id" class="config-item" @tap="selectConfig(config)">
               <GridLayout columns="auto, *, auto" rows="auto, auto">
                 <Image
                   col="0"
@@ -74,16 +58,8 @@
 
               <!-- 操作按钮 -->
               <StackLayout orientation="horizontal" class="config-actions">
-                <Button
-                  text="编辑"
-                  @tap.stop="$emit('edit-config', config)"
-                  class="action-button"
-                />
-                <Button
-                  text="删除"
-                  @tap.stop="deleteConfig(config.id)"
-                  class="action-button delete"
-                />
+                <Button text="编辑" @tap.stop="$emit('edit-config', config)" class="action-button" />
+                <Button text="删除" @tap.stop="deleteConfig(config.id)" class="action-button delete" />
               </StackLayout>
             </StackLayout>
           </StackLayout>
@@ -91,109 +67,105 @@
       </CardView>
 
       <!-- 隐私提示 -->
-      <Label
-        text="⚠️ 您的 API 密钥将安全存储在本地，不会上传到服务器"
-        class="privacy-note"
-        textWrap="true"
-      />
+      <Label text="⚠️ 您的 API 密钥将安全存储在本地，不会上传到服务器" class="privacy-note" textWrap="true" />
     </StackLayout>
   </ScrollView>
 </template>
 
 <script setup lang="ts">
-import { computed, type ComputedRef } from 'vue'
-import type { LLMConfig } from '@xierfloat-monorepo/mobile-ai/types'
-import { useChat } from '@xierfloat-monorepo/mobile-ai'
-import { AlertDialog } from '@nativescript/core'
+import { ref, computed, type ComputedRef } from "nativescript-vue";
+import type { LLMConfig } from "@xierfloat-monorepo/mobile-ai";
+import { useChat } from "@xierfloat-monorepo/mobile-ai";
+import { AlertDialog } from "@nativescript/core";
 
 // Props
 interface Props {
-  configs: LLMConfig[]
-  currentConfigId?: string
+  configs: LLMConfig[];
+  currentConfigId?: string;
 }
 
-const props = defineProps<Props>()
+const props = defineProps<Props>();
 
 // Emits
 const emit = defineEmits<{
-  (e: 'select-config', config: LLMConfig): void
-  (e: 'add-config'): void
-  (e: 'edit-config', config: LLMConfig): void
-}>()
+  (e: "select-config", config: LLMConfig): void;
+  (e: "add-config"): void;
+  (e: "edit-config", config: LLMConfig): void;
+}>();
 
 // 使用 useChat 获取 switchConfig 方法
-const chat = useChat()
-const isEditing = ref(false)
+const chat = useChat();
+const isEditing = ref(false);
 
 // Computed
 const currentConfig: ComputedRef<LLMConfig | null> = computed(() => {
   if (props.currentConfigId) {
-    return props.configs.find(c => c.id === props.currentConfigId) ?? null
+    return props.configs.find(c => c.id === props.currentConfigId) ?? null;
   }
-  return props.configs.find(c => c.isDefault) ?? null
-})
+  return props.configs.find(c => c.isDefault) ?? null;
+});
 
 // 方法
 const selectConfig = (config: LLMConfig) => {
-  emit('select-config', config)
-}
+  emit("select-config", config);
+};
 
 const switchConfig = async (config: LLMConfig) => {
   try {
-    await chat.switchConfig(config.id)
+    await chat.switchConfig(config.id);
     // 通知父组件切换成功
-    selectConfig(config)
+    selectConfig(config);
   } catch (error) {
     AlertDialog.show({
-      title: '错误',
-      message: '切换配置失败',
-      okButtonText: '确定'
-    })
+      title: "错误",
+      message: "切换配置失败",
+      okButtonText: "确定"
+    });
   }
-}
+};
 
 const deleteConfig = async (id: string) => {
   const confirm = await AlertDialog.show({
-    title: '确认删除',
-    message: '确定要删除这个配置吗？',
-    okButtonText: '删除',
-    cancelButtonText: '取消'
-  })
+    title: "确认删除",
+    message: "确定要删除这个配置吗？",
+    okButtonText: "删除",
+    cancelButtonText: "取消"
+  });
 
   if (confirm) {
     try {
-      await chat.deleteConfig(id)
+      await chat.deleteConfig(id);
       // 刷新配置列表 (父组件处理)
     } catch (error) {
       AlertDialog.show({
-        title: '错误',
-        message: '删除失败',
-        okButtonText: '确定'
-      })
+        title: "错误",
+        message: "删除失败",
+        okButtonText: "确定"
+      });
     }
   }
-}
+};
 
 const toggleEdit = () => {
-  isEditing.value = !isEditing.value
+  isEditing.value = !isEditing.value;
   if (!isEditing.value) {
     // 保存编辑逻辑
   }
-}
+};
 
 const getProviderIcon = (provider: string): string => {
   const icons = {
-    openai: '~/assets/icons/openai.png',
-    anthropic: '~/assets/icons/claude.png',
-    deepseek: '~/assets/icons/deepseek.png',
-    qwen: '~/assets/icons/qwen.png',
-    moonshot: '~/assets/icons/moonshot.png',
-    zhipu: '~/assets/icons/zhipu.png',
-    ollama: '~/assets/icons/ollama.png',
-    custom: '~/assets/icons/custom.png'
-  }
-  return icons[provider as keyof typeof icons] || icons.custom
-}
+    openai: "~/assets/icons/openai.png",
+    anthropic: "~/assets/icons/claude.png",
+    deepseek: "~/assets/icons/deepseek.png",
+    qwen: "~/assets/icons/qwen.png",
+    moonshot: "~/assets/icons/moonshot.png",
+    zhipu: "~/assets/icons/zhipu.png",
+    ollama: "~/assets/icons/ollama.png",
+    custom: "~/assets/icons/custom.png"
+  };
+  return icons[provider as keyof typeof icons] || icons.custom;
+};
 </script>
 
 <style scoped>

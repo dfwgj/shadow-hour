@@ -29,7 +29,7 @@
  */
 
 // ==================== Types ====================
-export * from './types'
+export * from "./types";
 
 // ==================== Engine ====================
 export {
@@ -39,14 +39,9 @@ export {
   type IEventBus,
   type EventBusOptions,
   type EventFilter
-} from './engine'
+} from "./engine";
 
-export {
-  MealyMachine,
-  streamProcessor,
-  createStreamMachine,
-  StateTransitions
-} from './engine'
+export { MealyMachine, streamProcessor, createStreamMachine, StateTransitions } from "./engine";
 
 // ==================== LLM ====================
 export type {
@@ -57,7 +52,7 @@ export type {
   ChatResponse,
   StreamCallback,
   StreamController
-} from './llm'
+} from "./llm";
 
 export {
   OpenAIAdapter,
@@ -67,14 +62,10 @@ export {
   getAdapterRegistry,
   createLLMAdapter,
   registerAdapter
-} from './llm'
+} from "./llm";
 
 // ==================== MCP ====================
-export {
-  ToolRegistryImpl,
-  getToolRegistry,
-  createToolRegistry
-} from './mcp'
+export { ToolRegistryImpl, getToolRegistry, createToolRegistry } from "./mcp";
 
 export {
   // Calendar
@@ -96,18 +87,22 @@ export {
   // Web Search
   type WebSearchService,
   type SearchResult,
+  type SearXNGConfig,
   webSearchDefinition,
   createWebSearchTools,
-  MockWebSearchService
-} from './mcp'
+  SearXNGSearchService,
+  MockWebSearchService,
+
+  // Web Fetch
+  type WebFetchResult,
+  type WebFetchConfig,
+  webFetchDefinition,
+  WebFetchService,
+  createWebFetchTools
+} from "./mcp";
 
 // ==================== Context ====================
-export {
-  ContextManager,
-  createContextManager,
-  type ContextManagerConfig,
-  type ContextWindow
-} from './context'
+export { ContextManager, createContextManager, type ContextManagerConfig, type ContextWindow } from "./context";
 
 // ==================== Prompt ====================
 export {
@@ -117,7 +112,7 @@ export {
   getSchedulerPrompt,
   PromptTemplates,
   type PromptTemplateName
-} from './prompt'
+} from "./prompt";
 
 // ==================== Storage ====================
 export {
@@ -126,7 +121,7 @@ export {
   MemoryStorageAdapter,
   createConfigRepository,
   createSessionRepository
-} from './storage'
+} from "./storage";
 
 // ==================== Composables ====================
 export {
@@ -136,4 +131,4 @@ export {
   useChat,
   type ChatOptions,
   type UseChatReturn
-} from './composables'
+} from "./composables";

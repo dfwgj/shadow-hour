@@ -12,7 +12,8 @@
     "@nativescript/core": ">=8.0.0",
     "nativescript-vue": "^3.0.0",
     "@nativescript-community/sqlite": "^3.5.1",
-    "@nativescript/local-notifications": ">=6.0.0"
+    "@nativescript/local-notifications": ">=6.0.0",
+    "@xierfloat-monorepo/mobile-ai": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.0.0"

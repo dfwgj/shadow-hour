@@ -1,3 +1,5 @@
+Apim
+apos
 AUTOINCREMENT
 Avenir
 dimen
@@ -5,8 +7,15 @@ disturl
 esbuild
 generatexlsx
 icns
+infobox
+infoboxes
+KHTML
 lintstagedrc
+moonshotai
 nativescript
+safesearch
+SEARXNG
+siliconflow
 TIAN
 vite
 xierfloat
