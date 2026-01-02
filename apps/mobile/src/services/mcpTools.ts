@@ -336,8 +336,14 @@ export function initializeMCPTools(): ToolRegistry {
 
   // 注册网页搜索工具
   try {
-    const searchService = new SearXNGSearchService(SEARXNG_CONFIG);
-    const webSearchTools = createWebSearchTools(searchService);
+    const webSearchTools = createWebSearchTools({
+      defaultEngine: "bing",
+      searxng: {
+        baseUrl: "https://searsh.gdmu-stuorg.com/",
+        language: "zh-CN",
+        engines: ["sogou", "presearch", "bing"]
+      }
+    });
     for (const tool of webSearchTools) {
       registry.register(tool);
     }

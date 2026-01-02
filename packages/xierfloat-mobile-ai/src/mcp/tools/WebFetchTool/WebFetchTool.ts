@@ -1,34 +1,10 @@
 /**
  * 网页内容抓取工具
- *
  * 从 URL 获取网页内容并提取纯文本
  */
-
 import { Http } from "@nativescript/core";
-import type { ToolHandler, ToolDefinition, ToolExecutionResult } from "../../types/tool";
-
-/** 网页抓取结果 */
-export interface WebFetchResult {
-  url: string;
-  title: string;
-  content: string;
-  /** 提取的纯文本长度 */
-  length: number;
-  /** 是否成功 */
-  success: boolean;
-  /** 错误信息 */
-  error?: string;
-}
-
-/** 网页抓取配置 */
-export interface WebFetchConfig {
-  /** 请求超时 (毫秒) */
-  timeout?: number;
-  /** 最大内容长度 (字符) */
-  maxLength?: number;
-  /** User-Agent */
-  userAgent?: string;
-}
+import type { ToolHandler, ToolDefinition, ToolExecutionResult } from "../../../types/tool";
+import type { WebFetchResult, WebFetchConfig } from "./type";
 
 /**
  * 网页内容抓取工具定义
@@ -44,13 +20,17 @@ export const webFetchDefinition: ToolDefinition = {
         type: "string",
         description: "要读取的网页 URL"
       },
+      source: {
+        type: "string",
+        description: "网页来源"
+      },
       maxLength: {
         type: "number",
         description: "返回的最大内容长度（字符数）",
         default: 5000
       }
     },
-    required: ["url"]
+    required: ["url", "source"]
   },
   category: "web"
 };
@@ -60,23 +40,16 @@ export const webFetchDefinition: ToolDefinition = {
  */
 export class WebFetchService {
   private readonly config: WebFetchConfig;
-
   constructor(config?: WebFetchConfig) {
     this.config = {
-      timeout: config?.timeout || 15000,
-      maxLength: config?.maxLength || 10000,
-      userAgent:
-        config?.userAgent ||
-        "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Mobile Safari/537.36"
+      timeout: config?.timeout || 15000
     };
   }
-
   /**
    * 抓取网页内容
    */
   async fetch(url: string, maxLength?: number): Promise<WebFetchResult> {
     const limit = maxLength || this.config.maxLength || 10000;
-
     try {
       // 验证 URL
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
@@ -89,18 +62,17 @@ export class WebFetchService {
           error: "Invalid URL: must start with http:// or https://"
         };
       }
-
       const response = await Http.request({
         url,
         method: "GET",
         headers: {
-          "User-Agent": this.config.userAgent!,
+          "User-Agent":
+            "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Mobile Safari/537.36",
           Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
           "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
         },
-        timeout: this.config.timeout
+        timeout: this.config.timeout || 15000
       });
-
       if (response.statusCode !== 200) {
         return {
           url,
