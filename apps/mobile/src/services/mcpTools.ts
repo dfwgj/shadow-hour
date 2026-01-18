@@ -355,7 +355,7 @@ export function initializeMCPTools(): ToolRegistry {
 
   // 注册网页读取工具
   try {
-    const fetchService = new WebFetchService({ timeout: 15000, maxLength: 8000 });
+    const fetchService = new WebFetchService({ timeout: 15000, maxBytes: 8000 });
     const webFetchTools = createWebFetchTools(fetchService);
     for (const tool of webFetchTools) {
       registry.register(tool);

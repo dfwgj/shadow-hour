@@ -26,6 +26,3 @@ export { YearView, MonthView, WeekView, WeekScheduleGrid } from "./components/ca
 export { EventCard } from "./components/card";
 export { ToastContainer, Toast, useToast } from "./components/toast";
 export type { ToastType, ToastPosition, ToastOptions, ToastInstance, IToastService } from "./components/toast";
-
-// AI 聊天组件
-export { ChatContainer, ChatMessage, ConfigEditor, ConfigList } from "./components/ai";

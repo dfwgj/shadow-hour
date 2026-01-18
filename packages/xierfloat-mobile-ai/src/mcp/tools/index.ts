@@ -43,12 +43,15 @@ export {
   type SearXNGConfig,
   type SearXNGResult
 } from "./WebSearchTool/type";
+export { SearXNGSearchService } from "./WebSearchTool/engines/SearXNG/SearXNGSearchService";
 
-// export {
-//   type WebFetchResult,
-//   type WebFetchConfig,
-//   webFetchDefinition,
-//   WebFetchService,
-//   createWebFetchHandler,
-//   createWebFetchTools
-// } from "./WebFetchTool";
+export {
+  type WebFetchResult,
+  type WebFetchConfig,
+  type ContentType,
+  webFetchDefinition,
+  WebFetchService,
+  createWebFetchHandler,
+  createWebFetchTools
+} from "./WebFetchTool/WebFetchTool";
+export { MAX_CONTENT_BYTES } from "./WebFetchTool/type";

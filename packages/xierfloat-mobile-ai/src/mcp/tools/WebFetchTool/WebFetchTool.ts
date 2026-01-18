@@ -1,10 +1,15 @@
 /**
  * 网页内容抓取工具
- * 从 URL 获取网页内容并提取纯文本
+ * 从 URL 获取内容，HTML 转 Markdown，其他格式直接透传
  */
 import { Http } from "@nativescript/core";
+import TurndownService from "turndown";
 import type { ToolHandler, ToolDefinition, ToolExecutionResult } from "../../../types/tool";
-import type { WebFetchResult, WebFetchConfig } from "./type";
+import type { WebFetchResult, WebFetchConfig, ContentType } from "./type";
+import { MAX_CONTENT_BYTES } from "./type";
+
+// Re-export types
+export type { WebFetchResult, WebFetchConfig, ContentType };
 
 /**
  * 网页内容抓取工具定义
@@ -12,25 +17,16 @@ import type { WebFetchResult, WebFetchConfig } from "./type";
 export const webFetchDefinition: ToolDefinition = {
   name: "web_fetch",
   displayName: "网页读取",
-  description: "读取指定网页的内容，提取纯文本信息。可用于获取搜索结果页面的详细内容。",
+  description: "读取指定网页的内容。HTML 页面会转换为 Markdown 格式，JSON/纯文本直接返回。",
   inputSchema: {
     type: "object",
     properties: {
       url: {
         type: "string",
         description: "要读取的网页 URL"
-      },
-      source: {
-        type: "string",
-        description: "网页来源"
-      },
-      maxLength: {
-        type: "number",
-        description: "返回的最大内容长度（字符数）",
-        default: 5000
       }
     },
-    required: ["url", "source"]
+    required: ["url"]
   },
   category: "web"
 };
@@ -40,79 +36,166 @@ export const webFetchDefinition: ToolDefinition = {
  */
 export class WebFetchService {
   private readonly config: WebFetchConfig;
+  private readonly turndown: TurndownService;
+
   constructor(config?: WebFetchConfig) {
     this.config = {
-      timeout: config?.timeout || 15000
+      timeout: config?.timeout ?? 15000,
+      maxBytes: config?.maxBytes ?? MAX_CONTENT_BYTES
     };
+
+    // 配置 Turndown
+    this.turndown = new TurndownService({
+      headingStyle: "atx",
+      codeBlockStyle: "fenced",
+      bulletListMarker: "-"
+    });
+
+    // 移除 script、style、noscript 标签
+    this.turndown.remove(["script", "style", "noscript", "nav", "footer", "aside"]);
   }
+
   /**
    * 抓取网页内容
    */
-  async fetch(url: string, maxLength?: number): Promise<WebFetchResult> {
-    const limit = maxLength || this.config.maxLength || 10000;
+  async fetch(url: string): Promise<WebFetchResult> {
+    const maxBytes = this.config.maxBytes ?? MAX_CONTENT_BYTES;
+
     try {
       // 验证 URL
       if (!url.startsWith("http://") && !url.startsWith("https://")) {
-        return {
-          url,
-          title: "",
-          content: "",
-          length: 0,
-          success: false,
-          error: "Invalid URL: must start with http:// or https://"
-        };
+        return this.errorResult(url, "Invalid URL: must start with http:// or https://");
       }
+
       const response = await Http.request({
         url,
         method: "GET",
         headers: {
           "User-Agent":
             "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Mobile Safari/537.36",
-          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,application/json,text/plain,*/*;q=0.8",
           "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8"
         },
-        timeout: this.config.timeout || 15000
+        timeout: this.config.timeout ?? 15000
       });
+
       if (response.statusCode !== 200) {
-        return {
-          url,
-          title: "",
-          content: "",
-          length: 0,
-          success: false,
-          error: `HTTP ${response.statusCode}`
-        };
+        return this.errorResult(url, `HTTP ${response.statusCode}`);
       }
 
-      const html = response.content?.toString() || "";
-      const title = this.extractTitle(html);
-      const content = this.extractContent(html, limit);
+      const rawContent = response.content?.toString() ?? "";
+      const headerVal = response.headers?.["Content-Type"] || response.headers?.["content-type"] || "";
+      const contentTypeHeader = Array.isArray(headerVal) ? headerVal[0] || "" : headerVal;
+      const contentType = this.detectContentType(contentTypeHeader, rawContent);
+
+      // PDF 暂不支持
+      if (contentType === "pdf") {
+        return this.errorResult(url, "PDF files are not supported yet");
+      }
+
+      // 根据类型处理内容
+      let processed: string;
+      let title = "";
+
+      if (contentType === "html") {
+        title = this.extractTitle(rawContent);
+        processed = this.htmlToMarkdown(rawContent);
+      } else if (contentType === "json") {
+        // JSON 格式化后透传
+        try {
+          const parsed = JSON.parse(rawContent);
+          processed = JSON.stringify(parsed, null, 2);
+        } catch {
+          processed = rawContent;
+        }
+      } else {
+        // 纯文本直接透传
+        processed = rawContent;
+      }
+
+      // 100KB 截断
+      const bytes = new TextEncoder().encode(processed);
+      const truncated = bytes.length > maxBytes;
+
+      if (truncated) {
+        // 按字节截断，找到合适的字符边界
+        const truncatedBytes = bytes.slice(0, maxBytes);
+        processed = new TextDecoder().decode(truncatedBytes);
+        // 避免截断在多字节字符中间导致乱码，去掉最后可能的残缺字符
+        processed = processed.replace(/[\uD800-\uDBFF]$/, "");
+        processed += "\n\n[warning: content truncated at 100KB]";
+      }
 
       return {
         url,
         title,
-        content,
-        length: content.length,
-        success: true
+        content: processed,
+        length: truncated ? maxBytes : bytes.length,
+        contentType,
+        success: true,
+        truncated
       };
     } catch (error) {
-      return {
-        url,
-        title: "",
-        content: "",
-        length: 0,
-        success: false,
-        error: String(error)
-      };
+      const errorMsg = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      console.error("[WebFetchService] Fetch error:", errorMsg);
+      return this.errorResult(url, errorMsg);
     }
   }
 
   /**
-   * 批量抓取多个网页
+   * 检测内容类型
    */
-  async fetchMultiple(urls: string[], maxLength?: number): Promise<WebFetchResult[]> {
-    const results = await Promise.all(urls.map(url => this.fetch(url, maxLength)));
-    return results;
+  private detectContentType(header: string, content: string): ContentType {
+    const lower = header.toLowerCase();
+
+    if (lower.includes("application/pdf")) {
+      return "pdf";
+    }
+    if (lower.includes("application/json")) {
+      return "json";
+    }
+    if (lower.includes("text/html") || lower.includes("application/xhtml")) {
+      return "html";
+    }
+    if (lower.includes("text/plain")) {
+      return "text";
+    }
+
+    // 尝试从内容推断
+    const trimmed = content.trim();
+    if (trimmed.startsWith("<!DOCTYPE") || trimmed.startsWith("<html") || trimmed.startsWith("<head")) {
+      return "html";
+    }
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+      try {
+        JSON.parse(trimmed);
+        return "json";
+      } catch {
+        // 不是有效 JSON
+      }
+    }
+
+    return "text";
+  }
+
+  /**
+   * HTML 转 Markdown
+   */
+  private htmlToMarkdown(html: string): string {
+    // 先清理一些常见的非内容区域
+    let cleaned = html;
+
+    // 移除 head 标签内容（保留 body）
+    cleaned = cleaned.replace(/<head[\s\S]*?<\/head>/gi, "");
+
+    // 移除注释
+    cleaned = cleaned.replace(/<!--[\s\S]*?-->/g, "");
+
+    // 使用 Turndown 转换
+    const markdown = this.turndown.turndown(cleaned);
+
+    // 清理多余空行
+    return markdown.replace(/\n{3,}/g, "\n\n").trim();
   }
 
   /**
@@ -120,99 +203,17 @@ export class WebFetchService {
    */
   private extractTitle(html: string): string {
     const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-    if (titleMatch) {
-      return this.decodeHtmlEntities(titleMatch[1] || "").trim();
+    if (titleMatch?.[1]) {
+      return this.decodeHtmlEntities(titleMatch[1]).trim();
     }
 
     // 尝试 og:title
     const ogMatch = html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i);
-    if (ogMatch) {
-      return this.decodeHtmlEntities(ogMatch[1] || "").trim();
+    if (ogMatch?.[1]) {
+      return this.decodeHtmlEntities(ogMatch[1]).trim();
     }
 
     return "";
-  }
-
-  /**
-   * 提取页面主要内容
-   */
-  private extractContent(html: string, maxLength: number): string {
-    let text = html;
-
-    // 1. 移除脚本和样式
-    text = text.replace(/<script[\s\S]*?<\/script>/gi, "");
-    text = text.replace(/<style[\s\S]*?<\/style>/gi, "");
-    text = text.replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
-
-    // 2. 移除注释
-    text = text.replace(/<!--[\s\S]*?-->/g, "");
-
-    // 3. 移除导航、页头、页脚等非内容区域
-    text = text.replace(/<nav[\s\S]*?<\/nav>/gi, "");
-    text = text.replace(/<header[\s\S]*?<\/header>/gi, "");
-    text = text.replace(/<footer[\s\S]*?<\/footer>/gi, "");
-    text = text.replace(/<aside[\s\S]*?<\/aside>/gi, "");
-
-    // 4. 尝试提取主要内容区域
-    const mainContent = this.extractMainContent(text);
-    if (mainContent) {
-      text = mainContent;
-    }
-
-    // 5. 移除所有 HTML 标签
-    text = text.replace(/<[^>]+>/g, " ");
-
-    // 6. 解码 HTML 实体
-    text = this.decodeHtmlEntities(text);
-
-    // 7. 清理空白字符
-    text = text
-      .replace(/\s+/g, " ") // 多个空白变成一个空格
-      .replace(/\n\s*\n/g, "\n") // 多个换行变成一个
-      .trim();
-
-    // 8. 截断到最大长度
-    if (text.length > maxLength) {
-      // 尽量在句子边界截断
-      const truncated = text.substring(0, maxLength);
-      const lastPeriod = Math.max(
-        truncated.lastIndexOf("。"),
-        truncated.lastIndexOf("."),
-        truncated.lastIndexOf("！"),
-        truncated.lastIndexOf("？")
-      );
-      if (lastPeriod > maxLength * 0.8) {
-        return truncated.substring(0, lastPeriod + 1) + "...";
-      }
-      return truncated + "...";
-    }
-
-    return text;
-  }
-
-  /**
-   * 尝试提取主要内容区域
-   */
-  private extractMainContent(html: string): string | null {
-    // 尝试常见的内容容器
-    const selectors = [
-      /<article[^>]*>([\s\S]*?)<\/article>/gi,
-      /<main[^>]*>([\s\S]*?)<\/main>/gi,
-      /<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
-      /<div[^>]*class="[^"]*article[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
-      /<div[^>]*class="[^"]*post[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
-      /<div[^>]*id="content"[^>]*>([\s\S]*?)<\/div>/gi,
-      /<div[^>]*id="main"[^>]*>([\s\S]*?)<\/div>/gi
-    ];
-
-    for (const regex of selectors) {
-      const match = regex.exec(html);
-      if (match && match[1] && match[1].length > 200) {
-        return match[1];
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -230,6 +231,22 @@ export class WebFetchService {
       .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
       .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
   }
+
+  /**
+   * 创建错误结果
+   */
+  private errorResult(url: string, error: string): WebFetchResult {
+    return {
+      url,
+      title: "",
+      content: "",
+      length: 0,
+      contentType: "unknown",
+      success: false,
+      truncated: false,
+      error
+    };
+  }
 }
 
 /**
@@ -240,21 +257,13 @@ export function createWebFetchHandler(service: WebFetchService): ToolHandler {
     definition: webFetchDefinition,
     async execute(args: Record<string, unknown>): Promise<ToolExecutionResult> {
       const url = args.url as string;
-      const maxLength = (args.maxLength as number) || 5000;
-
-      const result = await service.fetch(url, maxLength);
+      const result = await service.fetch(url);
 
       if (!result.success) {
         return {
           success: false,
-          content: JSON.stringify(
-            {
-              error: result.error,
-              url: result.url
-            },
-            null,
-            2
-          )
+          content: JSON.stringify({ error: result.error, url: result.url }, null, 2),
+          error: result.error || "Unknown error"
         };
       }
 
@@ -264,8 +273,10 @@ export function createWebFetchHandler(service: WebFetchService): ToolHandler {
           {
             url: result.url,
             title: result.title,
+            contentType: result.contentType,
             content: result.content,
-            length: result.length
+            length: result.length,
+            truncated: result.truncated
           },
           null,
           2
@@ -274,7 +285,9 @@ export function createWebFetchHandler(service: WebFetchService): ToolHandler {
     },
     validate(args: Record<string, unknown>) {
       const errors: string[] = [];
-      if (!args.url) errors.push("url is required");
+      if (!args.url) {
+        errors.push("url is required");
+      }
       if (typeof args.url === "string" && !args.url.startsWith("http")) {
         errors.push("url must start with http:// or https://");
       }
@@ -287,6 +300,6 @@ export function createWebFetchHandler(service: WebFetchService): ToolHandler {
  * 创建网页抓取工具
  */
 export function createWebFetchTools(service?: WebFetchService): ToolHandler[] {
-  const svc = service || new WebFetchService();
+  const svc = service ?? new WebFetchService();
   return [createWebFetchHandler(svc)];
 }

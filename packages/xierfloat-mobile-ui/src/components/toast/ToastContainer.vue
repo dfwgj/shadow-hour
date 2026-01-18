@@ -264,7 +264,7 @@ onUnmounted(() => {
           text="✕"
           class="text-sm ml-2 p-1"
           style="color: #909399"
-          @tap.stop="removeToast(toast.id)"
+          @tap="removeToast(toast.id)"
           verticalAlignment="center"
         />
       </GridLayout>
@@ -311,7 +311,7 @@ onUnmounted(() => {
           text="✕"
           class="text-base ml-3 p-1"
           style="color: #909399"
-          @tap.stop="removeToast(toast.id)"
+          @tap="removeToast(toast.id)"
           verticalAlignment="center"
         />
       </GridLayout>
@@ -358,7 +358,7 @@ onUnmounted(() => {
           text="✕"
           class="text-sm ml-2 p-1"
           style="color: #909399"
-          @tap.stop="removeToast(toast.id)"
+          @tap="removeToast(toast.id)"
           verticalAlignment="center"
         />
       </GridLayout>

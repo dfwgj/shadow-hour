@@ -47,6 +47,9 @@
     "nativescript",
     "notif",
     "nscalendar",
+    "NSHTTPURL",
+    "NSURL",
+    "NSUTF",
     "ollama",
     "pxtorem",
     "qwen",
@@ -57,6 +60,7 @@
     "staticlib",
     "Tauri",
     "tcamp",
+    "turndown",
     "zhipu",
     "zindex",
     "WechatSogou"

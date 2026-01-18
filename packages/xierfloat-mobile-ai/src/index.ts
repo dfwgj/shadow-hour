@@ -91,11 +91,11 @@ export {
   webSearchDefinition,
   createWebSearchTools,
   SearXNGSearchService,
-  MockWebSearchService,
 
   // Web Fetch
   type WebFetchResult,
   type WebFetchConfig,
+  type ContentType,
   webFetchDefinition,
   WebFetchService,
   createWebFetchTools

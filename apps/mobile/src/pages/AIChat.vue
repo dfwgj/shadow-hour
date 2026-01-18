@@ -197,6 +197,7 @@
 import { ref, computed, onMounted, watch, nextTick, $navigateTo, $navigateBack } from "nativescript-vue";
 import { Screen, Application, Utils, ApplicationSettings, Dialogs } from "@nativescript/core";
 import { Toast } from "@xierfloat-monorepo/mobile-ui";
+import { streamRequest, type StreamController } from "@xierfloat-monorepo/http-stream";
 import AIConfig from "./AIConfig.vue";
 import { initializeMCPTools, getToolDefinitions, executeTool } from "../services/mcpTools";
 import {
@@ -255,7 +256,7 @@ const streamingText = ref("");
 const isProcessing = ref(false);
 const errorMessage = ref("");
 const scrollViewRef = ref();
-const abortController = ref<any>(null);
+const streamController = ref<StreamController | null>(null);
 const isAborted = ref(false);
 const toolsReady = ref(false);
 const sessionId = ref(`session_${Date.now()}`);
@@ -584,11 +585,11 @@ async function sendMessage() {
     Toast.error("AI 响应失败");
   } finally {
     isProcessing.value = false;
-    abortController.value = null;
+    streamController.value = null;
   }
 }
 
-// 调用硅基流动 API
+// 调用硅基流动 API（流式）
 async function callSiliconFlowAPI(userInput: string, toolResults?: Array<{ tool_use_id: string; content: string }>) {
   // 构建消息，包含系统提示
   const apiMessages: any[] = [
@@ -621,14 +622,14 @@ async function callSiliconFlowAPI(userInput: string, toolResults?: Array<{ tool_
     });
   }
 
-  console.log("Calling Silicon Flow API...");
+  console.log("[AIChat] Calling Silicon Flow API (stream)...");
 
   // 构建请求体
   const requestBody: any = {
     model: model.value || DEFAULT_MODEL,
     messages: apiMessages,
     max_tokens: 4096,
-    stream: false,
+    stream: true, // 启用流式
     temperature: 0.7
   };
 
@@ -641,105 +642,174 @@ async function callSiliconFlowAPI(userInput: string, toolResults?: Array<{ tool_
     }
   }
 
-  console.log("[AIChat] 发送请求...");
+  console.log("[AIChat] 发送流式请求...");
 
-  // 使用 Promise.race 实现超时
-  const fetchPromise = fetch(SILICONFLOW_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey.value}`,
-      "Content-Type": "application/json",
-      "anthropic-version": "2023-06-01"
-    },
-    body: JSON.stringify(requestBody)
-  });
-
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => reject(new Error("请求超时(60秒)，请稍后重试")), 60000);
-  });
-
-  const response = await Promise.race([fetchPromise, timeoutPromise]);
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[AIChat] API 错误:", response.status, errorText);
-
-    // 如果是因为工具不支持导致的错误，尝试禁用工具重试
-    if (enableTools.value && (errorText.includes("tool") || response.status === 400)) {
-      console.log("[AIChat] 可能是工具不支持，禁用工具重试...");
-      enableTools.value = false;
-      return callSiliconFlowAPI(userInput, toolResults);
-    }
-
-    throw new Error(errorText || `API 错误: ${response.status}`);
-  }
-
-  const responseText = await response.text();
-  console.log("[AIChat] 收到响应:", responseText.substring(0, 500));
-
+  // 重置状态
+  isAborted.value = false;
+  streamingText.value = "";
   let fullContent = "";
   let toolUses: Array<{ id: string; name: string; input: Record<string, unknown> }> = [];
+  let buffer = "";
 
-  try {
-    const json = JSON.parse(responseText);
+  // 工具调用累积状态
+  const toolCallsMap: Map<number, { id: string; name: string; arguments: string }> = new Map();
 
-    if (Array.isArray(json.content)) {
-      for (const block of json.content) {
-        if (block.type === "text" && block.text) {
-          fullContent += block.text;
-        } else if (block.type === "tool_use") {
+  return new Promise<void>((resolve, reject) => {
+    const { controller, promise } = streamRequest(
+      {
+        url: SILICONFLOW_API_URL,
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey.value}`,
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+          Accept: "text/event-stream"
+        },
+        body: requestBody,
+        timeout: 60000
+      },
+      {
+        onData: chunk => {
+          // Worker 逐行发送，每个 chunk 就是一行
+          const line = chunk.trim();
+
+          // 跳过空行和 event: 行
+          if (!line || line.startsWith("event:")) return;
+
+          // 处理 data: 行（兼容有无空格）
+          if (!line.startsWith("data:")) return;
+          const data = line.startsWith("data: ") ? line.slice(6).trim() : line.slice(5).trim();
+
+          if (data === "[DONE]") {
+            // 流结束
+            console.log("[AIChat] 流式响应完成");
+            return;
+          }
+
+          try {
+            const parsed = JSON.parse(data);
+
+            // Anthropic 格式
+            if (parsed.type === "content_block_delta") {
+              if (parsed.delta?.type === "text_delta" && parsed.delta?.text) {
+                fullContent += parsed.delta.text;
+                streamingText.value = fullContent;
+                scrollToBottom();
+              } else if (parsed.delta?.type === "input_json_delta" && parsed.delta?.partial_json !== undefined) {
+                // 工具参数增量 - 使用 parsed.index 获取正确的工具
+                const tool = toolCallsMap.get(parsed.index);
+                if (tool) {
+                  tool.arguments += parsed.delta.partial_json;
+                }
+              }
+            } else if (parsed.type === "content_block_start") {
+              if (parsed.content_block?.type === "tool_use") {
+                const index = parsed.index || toolCallsMap.size;
+                toolCallsMap.set(index, {
+                  id: parsed.content_block.id,
+                  name: parsed.content_block.name,
+                  arguments: ""
+                });
+                console.log("[AIChat] 检测到工具调用:", parsed.content_block.name);
+              }
+            }
+
+            // OpenAI 格式
+            if (parsed.choices?.[0]?.delta) {
+              const delta = parsed.choices[0].delta;
+
+              // 文本增量
+              if (delta.content) {
+                fullContent += delta.content;
+                streamingText.value = fullContent;
+                scrollToBottom();
+              }
+
+              // 工具调用增量
+              if (delta.tool_calls) {
+                for (const tc of delta.tool_calls) {
+                  const index = tc.index;
+                  let existing = toolCallsMap.get(index);
+
+                  if (!existing) {
+                    existing = { id: tc.id || "", name: "", arguments: "" };
+                    toolCallsMap.set(index, existing);
+                  }
+
+                  if (tc.id) existing.id = tc.id;
+                  if (tc.function?.name) existing.name = tc.function.name;
+                  if (tc.function?.arguments) existing.arguments += tc.function.arguments;
+                }
+              }
+            }
+          } catch {
+            // 忽略解析错误
+          }
+        },
+        onError: error => {
+          console.error("[AIChat] 流式请求错误:", error);
+
+          // 如果是工具不支持错误，禁用工具重试
+          if (enableTools.value && error.message?.includes("tool")) {
+            console.log("[AIChat] 可能是工具不支持，禁用工具重试...");
+            enableTools.value = false;
+            callSiliconFlowAPI(userInput, toolResults).then(resolve).catch(reject);
+            return;
+          }
+
+          reject(error);
+        },
+        onComplete: async () => {
+          console.log("[AIChat] 流式请求完成");
+
           // 收集工具调用
-          console.log("[AIChat] 检测到工具调用:", block.name);
-          toolUses.push({
-            id: block.id,
-            name: block.name,
-            input: block.input || {}
-          });
+          for (const tc of toolCallsMap.values()) {
+            if (tc.name) {
+              try {
+                toolUses.push({
+                  id: tc.id,
+                  name: tc.name,
+                  input: tc.arguments ? JSON.parse(tc.arguments) : {}
+                });
+              } catch (e) {
+                console.error("[AIChat] 解析工具参数失败:", e);
+              }
+            }
+          }
+
+          // 保存完整消息
+          if (fullContent) {
+            const aiMessage: ChatMessage = {
+              id: `msg_${Date.now()}`,
+              role: "assistant",
+              content: fullContent,
+              timestamp: Date.now()
+            };
+            messages.value.push(aiMessage);
+            streamingText.value = "";
+          }
+
+          // 处理工具调用
+          if (toolUses.length > 0) {
+            try {
+              await handleToolCalls(toolUses);
+            } catch (e) {
+              reject(e);
+              return;
+            }
+          }
+
+          resolve();
         }
       }
-      if (!fullContent && toolUses.length === 0) {
-        const hasThinking = json.content.some((b: any) => b.type === "thinking");
-        if (hasThinking) {
-          fullContent = "抱歉，AI 正在思考中但未生成最终回复，请重试或换个问法。";
-        }
-      }
-    } else if (json.choices?.[0]?.message?.content) {
-      // OpenAI 格式响应
-      fullContent = json.choices[0].message.content;
+    );
 
-      // 检查 OpenAI 格式的工具调用
-      const toolCalls = json.choices?.[0]?.message?.tool_calls;
-      if (toolCalls && Array.isArray(toolCalls)) {
-        for (const tc of toolCalls) {
-          console.log("[AIChat] 检测到工具调用(OpenAI格式):", tc.function?.name);
-          toolUses.push({
-            id: tc.id,
-            name: tc.function?.name,
-            input: JSON.parse(tc.function?.arguments || "{}")
-          });
-        }
-      }
-    } else if (json.error) {
-      throw new Error(json.error.message || JSON.stringify(json.error));
-    }
-  } catch (e: any) {
-    console.error("[AIChat] 解析响应失败:", e);
-    if (e.message && !responseText.startsWith("{")) {
-      fullContent = responseText;
-    } else {
-      throw e;
-    }
-  }
+    // 保存控制器用于中断
+    streamController.value = controller;
 
-  // 先显示文本内容
-  if (fullContent) {
-    await fakeStreamOutput(fullContent);
-  }
-
-  // 处理工具调用
-  if (toolUses.length > 0) {
-    await handleToolCalls(toolUses);
-  }
+    // 错误处理
+    promise.catch(reject);
+  });
 }
 
 // 处理工具调用
@@ -815,35 +885,6 @@ function getToolDisplayName(name: string): string {
   return displayNames[name] || name;
 }
 
-// 假流式输出
-async function fakeStreamOutput(content: string) {
-  streamingText.value = "";
-  const chunkSize = 3; // 每次显示字符数
-  const delay = 20; // 延迟毫秒
-
-  for (let i = 0; i < content.length; i += chunkSize) {
-    if (isAborted.value) {
-      break;
-    }
-    streamingText.value += content.slice(i, i + chunkSize);
-    scrollToBottom();
-    await new Promise(r => setTimeout(r, delay));
-  }
-
-  // 完成后添加到消息列表
-  const finalContent = streamingText.value;
-  if (finalContent) {
-    const aiMessage: ChatMessage = {
-      id: `msg_${Date.now()}`,
-      role: "assistant",
-      content: isAborted.value ? finalContent + "\n\n[已中断]" : finalContent,
-      timestamp: Date.now()
-    };
-    messages.value.push(aiMessage);
-  }
-  streamingText.value = "";
-}
-
 // 快捷消息
 function sendQuickMessage(text: string) {
   inputText.value = text;
@@ -855,15 +896,14 @@ function abort() {
   // 设置中断标志
   isAborted.value = true;
 
-  // 尝试中断 XMLHttpRequest
-  if (abortController.value) {
+  // 中断流式请求
+  if (streamController.value) {
     try {
-      if (typeof abortController.value.abort === "function") {
-        abortController.value.abort();
-      }
+      streamController.value.abort();
     } catch (e) {
-      console.log("Abort failed:", e);
+      console.log("[AIChat] Abort failed:", e);
     }
+    streamController.value = null;
   }
 
   isProcessing.value = false;

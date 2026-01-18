@@ -22,7 +22,6 @@ export class SearXNGSearchService implements WebSearchService {
 
   async search(query: string, limit = 5): Promise<SearchResult[]> {
     const { baseUrl, language, categories, engines, timeRange, safesearch, timeout } = this.config;
-    // 手动构建 URL，避免 URLSearchParams 的兼容性问题
     const queryParams: string[] = [`q=${encodeURIComponent(query)}`, "format=json"];
     if (language) queryParams.push(`language=${encodeURIComponent(language)}`);
     if (categories?.length) queryParams.push(`categories=${encodeURIComponent(categories.join(","))}`);

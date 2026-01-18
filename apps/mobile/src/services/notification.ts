@@ -4,7 +4,10 @@
  * @author xierfloat
  */
 import { LocalNotifications } from "@nativescript/local-notifications";
-import { isAndroid, Device } from "@nativescript/core";
+import { isAndroid, Device, Utils } from "@nativescript/core";
+
+// Android SDK 类型声明
+declare const android: any;
 
 export interface ScheduleNotificationOptions {
   id: number;
@@ -43,21 +46,20 @@ export class NotificationService {
       const sdkVersion = parseInt(Device.sdkVersion, 10);
       // Android 8.0 (API 26) 及以上需要通知渠道
       if (sdkVersion >= 26) {
-        const androidApp = (global as any).android;
-        const context = androidApp.app.Application.context;
-        const NotificationManager = androidApp.app.NotificationManager;
-        const NotificationChannel = androidApp.app.NotificationChannel;
-        const notificationManager = context.getSystemService(
-          androidApp.content.Context.NOTIFICATION_SERVICE
-        );
+        const context = Utils.android.getApplicationContext();
+        if (!context) {
+          console.warn("[NotificationService] Android context not available yet");
+          return;
+        }
+        const notificationManager = context.getSystemService(android.content.Context.NOTIFICATION_SERVICE);
 
         // 创建日程提醒渠道
         const channelId = "calendar-reminder";
         const channelName = "日程提醒";
         const channelDescription = "日程事件的提醒通知";
-        const importance = NotificationManager.IMPORTANCE_HIGH;
+        const importance = android.app.NotificationManager.IMPORTANCE_HIGH;
 
-        const channel = new NotificationChannel(channelId, channelName, importance);
+        const channel = new android.app.NotificationChannel(channelId, channelName, importance);
         channel.setDescription(channelDescription);
         channel.enableVibration(true);
         channel.enableLights(true);
@@ -124,7 +126,9 @@ export class NotificationService {
       // 检查时间是否在未来
       if (options.at <= now) {
         console.warn("[NotificationService] 通知时间已过，不调度");
-        console.warn(`[NotificationService] 当前时间: ${now.toLocaleString()}, 目标时间: ${options.at.toLocaleString()}`);
+        console.warn(
+          `[NotificationService] 当前时间: ${now.toLocaleString()}, 目标时间: ${options.at.toLocaleString()}`
+        );
         return false;
       }
 
@@ -234,7 +238,6 @@ export class NotificationService {
     const notificationId = this.generateNotificationId(eventUid);
     await this.cancelNotification(notificationId);
   }
-
 }
 
 // 导出单例

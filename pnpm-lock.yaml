@@ -171,18 +171,37 @@ importers:
 
   apps/mobile/platforms/android/app/src/main/assets/app: {}
 
+  packages/http-stream:
+    dependencies:
+      '@nativescript/core':
+        specifier: '>=8.0.0'
+        version: 8.8.6
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
   packages/xierfloat-mobile-ai:
     dependencies:
       '@nativescript/core':
         specifier: '>=8.0.0'
         version: 8.8.6
+      '@xierfloat-monorepo/http-stream':
+        specifier: workspace:*
+        version: link:../http-stream
       nativescript-vue:
         specifier: ^3.0.0
         version: 3.0.2(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)
+      turndown:
+        specifier: ^7.2.0
+        version: 7.2.2
       vue:
         specifier: ^3.0.0
         version: 3.5.25(typescript@5.9.3)
     devDependencies:
+      '@types/turndown':
+        specifier: ^5.0.5
+        version: 5.0.6
       typescript:
         specifier: ^5.0.0
         version: 5.9.3
@@ -876,6 +895,9 @@ packages:
   '@leichtgewicht/ip-codec@2.0.5':
     resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
 
+  '@mixmark-io/domino@2.2.0':
+    resolution: {integrity: sha512-Y28PR25bHXUg88kCV7nivXrP2Nj2RueZ3/l/jdx6J9f8J4nsEGcgX0Qe6lt7Pa+J79+kPiJU3LguR6O/6zrLOw==}
+
   '@nano-sql/core@2.3.7':
     resolution: {integrity: sha512-B9nniPPRhPf5Hf2cyvy72SNEg4iKQEW6pig9nwrM4DJlmOMZudifOMPBoJuK6JcTaLATIOGRPkclfosNUALnLQ==}
     hasBin: true
@@ -1357,6 +1379,9 @@ packages:
 
   '@types/sockjs@0.3.36':
     resolution: {integrity: sha512-MK9V6NzAS1+Ud7JV9lJLFqW85VbC9dq3LmwZCuBe4wBDgKC0Kj/jd8Xl+nSviU+Qc3+m7umHHyHg//2KSa0a0Q==}
+
+  '@types/turndown@5.0.6':
+    resolution: {integrity: sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -4952,6 +4977,9 @@ packages:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
     engines: {node: '>=0.6.11 <=0.7.0 || >=0.7.3'}
 
+  turndown@7.2.2:
+    resolution: {integrity: sha512-1F7db8BiExOKxjSMU2b7if62D/XOyQyZbPKq/nUwopfgnHlqXHqQ0lvfUTeUIr1lZJzOPFn43dODyMSIfvWRKQ==}
+
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
@@ -6114,6 +6142,8 @@ snapshots:
   '@leichtgewicht/ip-codec@2.0.5':
     optional: true
 
+  '@mixmark-io/domino@2.2.0': {}
+
   '@nano-sql/core@2.3.7':
     dependencies:
       fast-deep-equal: 2.0.1
@@ -6603,6 +6633,8 @@ snapshots:
     dependencies:
       '@types/node': 24.10.1
     optional: true
+
+  '@types/turndown@5.0.6': {}
 
   '@types/ws@8.18.1':
     dependencies:
@@ -10456,6 +10488,10 @@ snapshots:
 
   tunnel@0.0.6:
     optional: true
+
+  turndown@7.2.2:
+    dependencies:
+      '@mixmark-io/domino': 2.2.0
 
   type-check@0.4.0:
     dependencies:

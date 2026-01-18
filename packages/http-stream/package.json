@@ -1,0 +1,35 @@
+{
+  "name": "@xierfloat-monorepo/http-stream",
+  "version": "0.1.0",
+  "description": "Streaming HTTP client for NativeScript - SSE and chunked transfer support",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": [
+    "src"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./llm": "./src/llm-stream.ts",
+    "./src/workers/*": "./src/workers/*.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@nativescript/core": ">=8.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "nativescript",
+    "http",
+    "streaming",
+    "sse",
+    "server-sent-events",
+    "chunked"
+  ],
+  "author": "xierfloat",
+  "license": "MIT"
+}
