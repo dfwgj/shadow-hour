@@ -5,7 +5,7 @@
  * @author xierfloat
  */
 
-import { ref, computed, onMounted, onUnmounted, nextTick } from "nativescript-vue";
+import { ref, onMounted, onUnmounted, nextTick } from "nativescript-vue";
 import { CoreTypes } from "@nativescript/core";
 import type { ToastInstance, ToastOptions, ToastType, ToastPosition } from "./types";
 
@@ -23,8 +23,8 @@ function generateId(): string {
 }
 
 // 默认配置
-const DEFAULT_DURATION = 2500;
-const DEFAULT_POSITION: ToastPosition = "top";
+const DEFAULT_DURATION = 1500;
+const DEFAULT_POSITION: ToastPosition = "center";
 const ANIMATION_DURATION = 250;
 
 /**
@@ -144,11 +144,6 @@ function info(message: string, options?: Partial<ToastOptions>): void {
   addToast({ ...options, message, type: "info" });
 }
 
-// 按位置分组的 Toast
-const topToasts = computed(() => toasts.value.filter(t => t.position === "top"));
-const centerToasts = computed(() => toasts.value.filter(t => t.position === "center"));
-const bottomToasts = computed(() => toasts.value.filter(t => t.position === "bottom"));
-
 // 类型对应的淡背景色
 function getTypeBgColor(type: ToastType): string {
   const colors: Record<ToastType, string> = {
@@ -222,146 +217,41 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <GridLayout rows="auto, *, auto" columns="*" class="pointer-events-none">
-    <!-- 顶部 Toast -->
-    <StackLayout row="0" col="0" class="p-4 pt-12">
-      <GridLayout
-        v-for="toast in topToasts"
-        :key="toast.id"
-        :ref="(el: any) => setToastRef(toast.id, el)"
-        columns="auto, *, auto"
-        class="rounded-lg p-3 mb-2 pointer-events-auto"
-        :style="{ backgroundColor: getTypeBgColor(toast.type) }"
-        @tap="removeToast(toast.id)"
-      >
-        <!-- 图标 -->
-        <StackLayout
-          col="0"
-          class="w-5 h-5 rounded-full"
-          :style="{ backgroundColor: getTypeColor(toast.type) }"
-          verticalAlignment="center"
-        >
-          <Label
-            :text="getTypeIcon(toast.type)"
-            class="text-white text-xs font-bold text-center"
-            verticalAlignment="center"
-            horizontalAlignment="center"
-          />
-        </StackLayout>
-        <!-- 消息 -->
-        <Label
-          col="1"
-          :text="toast.message"
-          class="text-sm ml-2"
-          :style="{ color: getTypeColor(toast.type) }"
-          textWrap="true"
-          verticalAlignment="center"
-        />
-        <!-- 关闭按钮 -->
-        <Label
-          v-if="toast.showClose"
-          col="2"
-          text="✕"
-          class="text-sm ml-2 p-1"
-          style="color: #909399"
-          @tap="removeToast(toast.id)"
-          verticalAlignment="center"
-        />
-      </GridLayout>
-    </StackLayout>
-
-    <!-- 中间 Toast -->
-    <StackLayout row="1" col="0" verticalAlignment="center" class="p-4">
-      <GridLayout
-        v-for="toast in centerToasts"
-        :key="toast.id"
-        :ref="(el: any) => setToastRef(toast.id, el)"
-        columns="auto, *, auto"
-        class="rounded-lg p-4 mb-2 pointer-events-auto"
-        :style="{ backgroundColor: getTypeBgColor(toast.type) }"
-        @tap="removeToast(toast.id)"
-      >
-        <!-- 图标 -->
-        <StackLayout
-          col="0"
-          class="w-8 h-8 rounded-full"
-          :style="{ backgroundColor: getTypeColor(toast.type) }"
-          verticalAlignment="center"
-        >
-          <Label
-            :text="getTypeIcon(toast.type)"
-            class="text-white text-base font-bold text-center"
-            verticalAlignment="center"
-            horizontalAlignment="center"
-          />
-        </StackLayout>
-        <!-- 消息 -->
-        <Label
-          col="1"
-          :text="toast.message"
-          class="text-base ml-3"
-          :style="{ color: getTypeColor(toast.type) }"
-          textWrap="true"
-          verticalAlignment="center"
-        />
-        <!-- 关闭按钮 -->
-        <Label
-          v-if="toast.showClose"
-          col="2"
-          text="✕"
-          class="text-base ml-3 p-1"
-          style="color: #909399"
-          @tap="removeToast(toast.id)"
-          verticalAlignment="center"
-        />
-      </GridLayout>
-    </StackLayout>
-
-    <!-- 底部 Toast -->
-    <StackLayout row="2" col="0" class="p-4 pb-8">
-      <GridLayout
-        v-for="toast in bottomToasts"
-        :key="toast.id"
-        :ref="(el: any) => setToastRef(toast.id, el)"
-        columns="auto, *, auto"
-        class="rounded-lg p-3 mb-2 pointer-events-auto"
-        :style="{ backgroundColor: getTypeBgColor(toast.type) }"
-        @tap="removeToast(toast.id)"
-      >
-        <!-- 图标 -->
-        <StackLayout
-          col="0"
-          class="w-6 h-6 rounded-full"
-          :style="{ backgroundColor: getTypeColor(toast.type) }"
-          verticalAlignment="center"
-        >
-          <Label
-            :text="getTypeIcon(toast.type)"
-            class="text-white text-sm font-bold text-center"
-            verticalAlignment="center"
-            horizontalAlignment="center"
-          />
-        </StackLayout>
-        <!-- 消息 -->
-        <Label
-          col="1"
-          :text="toast.message"
-          class="text-sm ml-2"
-          :style="{ color: getTypeColor(toast.type) }"
-          textWrap="true"
-          verticalAlignment="center"
-        />
-        <!-- 关闭按钮 -->
-        <Label
-          v-if="toast.showClose"
-          col="2"
-          text="✕"
-          class="text-sm ml-2 p-1"
-          style="color: #909399"
-          @tap="removeToast(toast.id)"
-          verticalAlignment="center"
-        />
-      </GridLayout>
-    </StackLayout>
-  </GridLayout>
+  <FlexboxLayout
+    v-for="toast in toasts"
+    :key="toast.id"
+    :ref="(el: any) => setToastRef(toast.id, el)"
+    flexDirection="column"
+    alignItems="center"
+    justifyContent="center"
+    width="32%"
+    height="14%"
+    :verticalAlignment="toast.position === 'top' ? 'top' : toast.position === 'bottom' ? 'bottom' : 'center'"
+    horizontalAlignment="center"
+    :marginTop="toast.position === 'top' ? 60 : 0"
+    :marginBottom="toast.position === 'bottom' ? 60 : 0"
+    class="rounded-2xl p-4"
+    :style="{ backgroundColor: getTypeBgColor(toast.type) }"
+    @tap="removeToast(toast.id)"
+  >
+    <!-- 图标 -->
+    <FlexboxLayout
+      width="32"
+      height="32"
+      alignItems="center"
+      justifyContent="center"
+      borderRadius="16"
+      :style="{ backgroundColor: getTypeColor(toast.type) }"
+    >
+      <Label :text="getTypeIcon(toast.type)" class="text-white text-lg font-bold" />
+    </FlexboxLayout>
+    <!-- 消息 -->
+    <Label
+      :text="toast.message"
+      class="text-lg mt-2"
+      :style="{ color: getTypeColor(toast.type) }"
+      textWrap="true"
+      textAlignment="center"
+    />
+  </FlexboxLayout>
 </template>

@@ -1,16 +1,21 @@
 <template>
   <Frame>
     <Page actionBarHidden="true">
-      <!-- 使用外层 GridLayout 实现弹窗覆盖 -->
       <GridLayout rows="*" columns="*">
         <!-- 主内容 -->
         <GridLayout row="0" col="0" rows="auto, auto, auto, *, auto" class="bg-theme-secondary">
           <!-- 状态栏占位 -->
           <StackLayout row="0" :height="statusBarHeight" />
           <!-- 头部标题 -->
-          <StackLayout row="1" class="bg-theme-card p-3">
+          <FlexboxLayout row="1" orientation="horizontal" justifyContent="space-between" class="bg-theme-card p-4">
             <Label :text="headerTitle" class="text-2xl font-bold text-theme-primary" />
-          </StackLayout>
+            <Label
+              text="+"
+              @tap="openAddEvent"
+              :class="[getBrandClass('text'), 'text-4xl text-center']"
+              verticalAlignment="center"
+            />
+          </FlexboxLayout>
 
           <!-- 视图切换器 -->
           <GridLayout row="2" columns="*, *, *, *" class="bg-theme-secondary mx-4 rounded-3xl p-1 mt-2">
@@ -20,8 +25,8 @@
               :col="index"
               :text="tab.label"
               :class="[
-                'text-center py-2 text-sm text-theme-primary rounded-2xl',
-                currentView === tab.type ? 'bg-theme-card font-medium' : ''
+                'text-center py-2 text-sm text-theme-primary rounded-2xl ',
+                currentView === tab.type ? 'bg-theme-card font-medium ' : ''
               ]"
               @tap="switchView(tab.type)"
             />
@@ -151,19 +156,6 @@
                 :class="['text-md text-center', currentNav === 'today' ? 'text-theme-brand' : 'text-theme-secondary']"
               />
             </StackLayout>
-          </GridLayout>
-
-          <GridLayout row="2" rowSpan="2" columns="*, auto" rows="*, auto" class="pointer-events-none">
-            <GridLayout
-              col="1"
-              row="1"
-              class="w-14 h-14 bg-theme-card rounded-full m-4"
-              androidElevation="4"
-              boxShadow="0 4 10 rgba(0,0,0,0.15)"
-              @tap="openAddEvent"
-            >
-              <Label text="+" :class="[getBrandClass('text'), 'text-4xl text-center']" verticalAlignment="center" />
-            </GridLayout>
           </GridLayout>
         </GridLayout>
 
