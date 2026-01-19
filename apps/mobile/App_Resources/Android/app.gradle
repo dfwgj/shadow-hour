@@ -4,11 +4,13 @@ dependencies {
 }
 
 android {
+  namespace "org.nativescript.shadowHour"
   compileSdkVersion 35
   buildToolsVersion "35"
   // ndkVersion ""
 
   defaultConfig {
+    applicationId "org.nativescript.shadowHour"
     minSdkVersion 24
     targetSdkVersion 35
 

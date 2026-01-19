@@ -3,7 +3,9 @@
  * 在后台线程执行网络请求，通过消息传递数据
  */
 
-import "@nativescript/core/globals";
+// 只引入必要的全局设置，避免重复的类扩展
+// @nativescript/core/globals 包含会导致 SBG 冲突的类扩展
+// Worker 环境只需要 Java 访问，不需要完整的 NativeScript globals
 
 // Worker 上下文
 const context: Worker = self as any;

@@ -13,7 +13,14 @@ infobox
 infoboxes
 IPLOC
 KHTML
+kimera
+ldpi
 lintstagedrc
+mdpi
+hdpi
+xhdpi
+xxhdpi
+xxxhdpi
 moonshotai
 nativescript
 presearch

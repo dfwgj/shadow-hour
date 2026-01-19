@@ -2,7 +2,7 @@
     <item>
         <bitmap android:gravity="fill" android:src="@drawable/background" />
     </item>
-    <item>
+    <!-- <item>
         <bitmap android:gravity="center" android:src="@drawable/logo" />
-    </item>
+    </item> -->
 </layer-list>
