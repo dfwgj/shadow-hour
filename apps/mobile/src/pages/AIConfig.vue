@@ -2,57 +2,57 @@
   <Page actionBarHidden="true">
     <GridLayout rows="auto, auto, *, auto">
       <!-- 状态栏占位 -->
-      <StackLayout row="0" :height="statusBarHeight" class="bg-white" />
+      <StackLayout row="0" :height="statusBarHeight" class="bg-theme-card" />
 
       <!-- 头部 -->
-      <GridLayout row="1" columns="auto, *, auto" class="bg-white p-3 border-b border-gray-100">
-        <Label col="0" text="←" class="text-2xl text-gray-600 p-2" @tap="goBack" />
-        <Label col="1" text="AI 配置" class="text-lg font-bold text-gray-800 text-center" />
+      <GridLayout row="1" columns="auto, *, auto" class="bg-theme-card p-3 border-b border-theme-light">
+        <Label col="0" text="←" class="text-2xl text-theme-secondary p-2" @tap="goBack" />
+        <Label col="1" text="AI 配置" class="text-lg font-bold text-theme-primary text-center" />
         <Label col="2" text="" class="text-xl p-2" />
       </GridLayout>
 
       <!-- 配置内容 -->
-      <ScrollView row="2" class="bg-gray-50 overflow-auto">
+      <ScrollView row="2" class="bg-theme-secondary overflow-auto">
         <StackLayout class="p-4">
           <!-- 硅基流动配置卡片 -->
-          <StackLayout class="bg-white rounded-2xl p-4 mb-4">
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
             <!-- 平台标识 -->
             <GridLayout columns="auto, *" class="mb-4">
               <StackLayout col="1" class="ml-3">
-                <Label text="硅基流动" class="text-lg font-bold text-gray-800" />
-                <Label text="SiliconFlow AI Platform" class="text-sm text-gray-500" />
+                <Label text="硅基流动" class="text-lg font-bold text-theme-primary" />
+                <Label text="SiliconFlow AI Platform" class="text-sm text-theme-secondary" />
               </StackLayout>
             </GridLayout>
 
             <!-- API Key -->
             <StackLayout class="mb-4">
-              <Label text="API Key" class="text-gray-600 mb-2" />
+              <Label text="API Key" class="text-theme-secondary mb-2" />
               <TextField
                 v-model="apiKey"
                 hint="输入你的硅基流动 API Key"
                 secure="true"
-                class="bg-gray-100 rounded-xl p-3"
+                class="bg-theme-tertiary rounded-xl p-3"
               />
-              <Label text="前往获取 API Key →" class="text-blue-500 text-sm mt-2" @tap="openApiKeyPage" />
+              <Label text="前往获取 API Key →" class="text-theme-info text-sm mt-2" @tap="openApiKeyPage" />
             </StackLayout>
 
             <!-- 模型选择 -->
             <StackLayout class="mb-4">
-              <Label text="模型" class="text-gray-600 mb-2" />
-              <TextField v-model="model" hint="zai-org/GLM-4.6V" class="bg-gray-100 rounded-xl p-3" />
+              <Label text="模型" class="text-theme-secondary mb-2" />
+              <TextField v-model="model" hint="zai-org/GLM-4.6V" class="bg-theme-tertiary rounded-xl p-3" />
             </StackLayout>
 
             <!-- 推荐模型 -->
             <StackLayout class="mb-4">
-              <Label text="推荐模型" class="text-gray-600 mb-2" />
-              <WrapLayout class="bg-gray-50 rounded-xl p-2">
+              <Label text="推荐模型" class="text-theme-secondary mb-2" />
+              <WrapLayout class="bg-theme-secondary rounded-xl p-2">
                 <Label
                   v-for="m in recommendedModels"
                   :key="m.id"
                   :text="m.name"
                   :class="[
                     'px-3 py-2 m-1 rounded-lg text-xs',
-                    model === m.id ? 'bg-purple-500 text-white' : 'bg-white text-gray-600'
+                    model === m.id ? 'bg-theme-brand text-theme-inverse' : 'bg-theme-card text-theme-secondary'
                   ]"
                   @tap="selectModel(m.id)"
                 />
@@ -65,44 +65,44 @@
               :class="[
                 'text-center py-3 rounded-xl font-medium mb-2',
                 testStatus === '连接成功'
-                  ? 'bg-green-100 text-green-600'
+                  ? 'bg-theme-success text-theme-inverse'
                   : testStatus === '连接失败'
-                    ? 'bg-red-100 text-red-600'
-                    : 'bg-gray-100 text-gray-600'
+                    ? 'bg-theme-error text-theme-inverse'
+                    : 'bg-theme-tertiary text-theme-secondary'
               ]"
               @tap="testConnection"
             />
             <!-- 保存按钮 -->
             <Label
               text="保存配置"
-              class="bg-purple-500 text-white text-center py-3 rounded-xl font-medium"
+              class="bg-theme-brand text-theme-inverse text-center py-3 rounded-xl font-medium"
               @tap="saveConfig"
             />
           </StackLayout>
 
           <!-- 功能说明 -->
-          <StackLayout class="bg-white rounded-2xl p-4 mb-4">
-            <Label text="支持的功能" class="text-lg font-bold text-gray-800 mb-4" />
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <Label text="支持的功能" class="text-lg font-bold text-theme-primary mb-4" />
 
             <StackLayout v-for="feature in features" :key="feature.title" class="mb-3">
               <GridLayout columns="auto, *">
                 <Label col="0" :text="feature.icon" class="text-xl mr-3" />
                 <StackLayout col="1">
-                  <Label :text="feature.title" class="text-gray-800 font-medium" />
-                  <Label :text="feature.desc" class="text-sm text-gray-500" textWrap="true" />
+                  <Label :text="feature.title" class="text-theme-primary font-medium" />
+                  <Label :text="feature.desc" class="text-sm text-theme-secondary" textWrap="true" />
                 </StackLayout>
               </GridLayout>
             </StackLayout>
           </StackLayout>
 
           <!-- 隐私说明 -->
-          <StackLayout class="bg-blue-50 rounded-2xl p-4">
+          <StackLayout class="bg-theme-info rounded-2xl p-4" style="opacity: 0.15">
             <GridLayout columns="auto, *">
               <StackLayout col="1">
-                <Label text="隐私保护" class="text-blue-800 font-medium" />
+                <Label text="隐私保护" class="text-theme-info font-medium" />
                 <Label
                   text="你的 API Key 仅存储在本地设备，不会上传到任何服务器。所有对话数据也仅保存在本地。"
-                  class="text-sm text-blue-600"
+                  class="text-sm text-theme-info"
                   textWrap="true"
                 />
               </StackLayout>
@@ -112,7 +112,7 @@
       </ScrollView>
 
       <!-- 底部安全区域 -->
-      <StackLayout row="3" :height="bottomSafeArea" class="bg-gray-50" />
+      <StackLayout row="3" :height="bottomSafeArea" class="bg-theme-secondary" />
     </GridLayout>
   </Page>
 </template>

@@ -4,6 +4,9 @@
  * 支持新增和查看/编辑模式
  */
 import { ref, computed, watch } from "nativescript-vue";
+import { useTheme } from "../composables/useTheme";
+const { getBrandClass, getColor } = useTheme();
+
 import type { CalendarEvent } from "~/types/calendar";
 
 // 提醒时间选项
@@ -14,7 +17,7 @@ const reminderOptions = [
   { label: "前15分钟", value: 15 },
   { label: "前30分钟", value: 30 },
   { label: "前1小时", value: 60 },
-  { label: "前2小时", value: 120 },
+  { label: "前2小时", value: 120 }
 ];
 
 const props = defineProps<{
@@ -59,7 +62,7 @@ const modalTitle = computed(() => (isEditMode.value ? "查看日程" : "新建�
 
 // 当前提醒选项标签
 const currentReminderLabel = computed(() => {
-  const option = reminderOptions.find((o) => o.value === reminderMinutes.value);
+  const option = reminderOptions.find(o => o.value === reminderMinutes.value);
   return option ? option.label : "前10分钟";
 });
 
@@ -317,86 +320,85 @@ function onTimeChange(args: any) {
   <GridLayout v-if="visible" rows="*" columns="*">
     <!-- 背景遮罩 (全屏) -->
     <StackLayout row="0" col="0" class="bg-black opacity-50" @tap="handleClose" />
-
     <!-- 弹窗内容 -->
     <ScrollView row="0" col="0" verticalAlignment="center" class="mx-4">
-      <StackLayout class="bg-white rounded-2xl p-5">
+      <StackLayout class="bg-theme-card rounded-2xl p-5">
         <!-- 标题栏 -->
         <GridLayout columns="auto, *, auto" class="mb-4">
-          <Label col="0" text="取消" class="text-base text-gray-500" @tap="handleClose" />
-          <Label col="1" :text="modalTitle" class="text-lg font-bold text-center text-gray-800" />
-          <Label col="2" text="保存" class="text-base text-orange-500 font-medium" @tap="handleSubmit" />
+          <Label col="0" text="取消" class="text-base text-theme-secondary" @tap="handleClose" />
+          <Label col="1" :text="modalTitle" class="text-lg font-bold text-center text-theme-primary" />
+          <Label col="2" text="保存" class="text-base font-medium" :class="getBrandClass('text')" @tap="handleSubmit" />
         </GridLayout>
 
         <!-- 错误提示 -->
-        <Label v-if="errorMessage" :text="errorMessage" class="text-sm text-red-500 mb-3 px-2" />
+        <Label v-if="errorMessage" :text="errorMessage" class="text-lg text-theme-error mb-3 px-2" />
 
         <!-- 标题输入 -->
         <StackLayout class="mb-4">
-          <Label text="标题" class="text-sm text-gray-500 mb-2" />
-          <TextField v-model="summary" hint="请输入日程标题" class="bg-gray-100 rounded-xl p-3 text-base" />
+          <Label text="标题" class="text-sm text-theme-secondary mb-2" />
+          <TextField
+            v-model="summary"
+            hint="请输入日程标题"
+            class="bg-theme-secondary rounded-xl p-3 text-base text-theme-primary"
+          />
         </StackLayout>
 
         <!-- 开始时间 -->
         <StackLayout class="mb-4">
-          <Label text="开始时间" class="text-sm text-gray-500 mb-2" />
-          <GridLayout columns="*, auto, *" class="bg-gray-100 rounded-xl p-3">
+          <Label text="开始时间" class="text-sm text-theme-secondary mb-2" />
+          <GridLayout columns="*, auto, *" class="bg-theme-secondary rounded-xl p-3">
             <StackLayout col="0" @tap="openPicker('startDate')">
-              <Label :text="formatDate(startDate)" class="text-base text-gray-800" />
-              <Label :text="formatWeekday(startDate)" class="text-xs text-gray-500" />
+              <Label :text="formatDate(startDate)" class="text-base text-theme-primary" />
+              <Label :text="formatWeekday(startDate)" class="text-xs text-theme-secondary" />
             </StackLayout>
-            <Label col="1" text="|" class="text-gray-300 mx-3" />
+            <Label col="1" text="|" class="text-theme-tertiary mx-3" />
             <StackLayout col="2" @tap="openPicker('startTime')">
-              <Label :text="formatTime(startDate)" class="text-xl font-medium text-gray-800" />
+              <Label :text="formatTime(startDate)" class="text-xl font-medium text-theme-primary" />
             </StackLayout>
           </GridLayout>
         </StackLayout>
 
         <!-- 结束时间 -->
         <StackLayout class="mb-4">
-          <Label text="结束时间" class="text-sm text-gray-500 mb-2" />
-          <GridLayout columns="*, auto, *" class="bg-gray-100 rounded-xl p-3">
+          <Label text="结束时间" class="text-sm text-theme-secondary mb-2" />
+          <GridLayout columns="*, auto, *" class="bg-theme-secondary rounded-xl p-3">
             <StackLayout col="0" @tap="openPicker('endDate')">
-              <Label :text="formatDate(endDate)" class="text-base text-gray-800" />
-              <Label :text="formatWeekday(endDate)" class="text-xs text-gray-500" />
+              <Label :text="formatDate(endDate)" class="text-base text-theme-primary" />
+              <Label :text="formatWeekday(endDate)" class="text-xs text-theme-secondary" />
             </StackLayout>
-            <Label col="1" text="|" class="text-gray-300 mx-3" />
+            <Label col="1" text="|" class="text-theme-tertiary mx-3" />
             <StackLayout col="2" @tap="openPicker('endTime')">
-              <Label :text="formatTime(endDate)" class="text-xl font-medium text-gray-800" />
+              <Label :text="formatTime(endDate)" class="text-xl font-medium text-theme-primary" />
             </StackLayout>
           </GridLayout>
         </StackLayout>
 
         <!-- 提醒设置 -->
         <StackLayout class="mb-4">
-          <Label text="提醒" class="text-sm text-gray-500 mb-2" />
-          <GridLayout columns="auto, *, auto" class="bg-gray-100 rounded-xl p-3">
-            <Label col="0" text="开启提醒" class="text-base text-gray-800" />
-            <Switch
-              col="2"
-              v-model="enableReminder"
-             
-            />
+          <Label text="提醒" class="text-sm text-theme-secondary mb-2" />
+          <GridLayout columns="auto, *, auto" class="bg-theme-secondary rounded-xl p-3">
+            <Label col="0" text="开启提醒" class="text-base" />
+            <Switch col="2" v-model="enableReminder" :color="getColor('primary')" />
           </GridLayout>
           <!-- 提醒时间选择（仅在开启时显示） -->
           <GridLayout
             v-if="enableReminder"
             columns="*, auto"
-            class="bg-gray-100 rounded-xl p-3 mt-2"
+            class="bg-theme-secondary rounded-xl p-3 mt-2"
             @tap="showReminderPicker = true"
           >
-            <Label col="0" text="提前提醒" class="text-base text-gray-800" />
-            <Label col="1" :text="currentReminderLabel" class="text-base text-orange-500" />
+            <Label col="0" text="提前提醒" class="text-base text-theme-primary" />
+            <Label col="1" :text="currentReminderLabel" class="text-base font-medium" :class="getBrandClass('text')" />
           </GridLayout>
         </StackLayout>
 
         <!-- 描述输入 -->
         <StackLayout class="mb-2">
-          <Label text="备注" class="text-sm text-gray-500 mb-2" />
+          <Label text="备注" class="text-sm text-theme-secondary mb-2" />
           <TextView
             v-model="description"
             hint="添加备注（可选）"
-            class="bg-gray-100 rounded-xl p-3 text-base"
+            class="bg-theme-secondary rounded-xl p-3 text-base text-theme-primary"
             height="80"
           />
         </StackLayout>
@@ -409,16 +411,16 @@ function onTimeChange(args: any) {
       <StackLayout row="0" rowSpan="2" col="0" class="bg-black opacity-30" @tap="closePicker" />
 
       <!-- 选择器内容 -->
-      <StackLayout row="1" col="0" class="bg-white rounded-t-2xl">
+      <StackLayout row="1" col="0" class="bg-theme-card rounded-t-2xl">
         <!-- 选择器标题栏 -->
-        <GridLayout columns="auto, *, auto" class="p-4 border-b border-gray-100">
-          <Label col="0" text="取消" class="text-base text-gray-500" @tap="closePicker" />
+        <GridLayout columns="auto, *, auto" class="p-4 border-b border-theme-light">
+          <Label col="0" text="取消" class="text-base text-theme-secondary" @tap="closePicker" />
           <Label
             col="1"
             :text="showPicker === 'startDate' || showPicker === 'endDate' ? '选择日期' : '选择时间'"
-            class="text-base font-medium text-center text-gray-800"
+            class="text-base font-medium text-center text-theme-primary"
           />
-          <Label col="2" text="确定" class="text-base text-orange-500 font-medium" @tap="confirmPicker" />
+          <Label col="2" text="确定" class="text-base text-theme-brand font-medium" @tap="confirmPicker" />
         </GridLayout>
 
         <!-- 日期选择器 -->
@@ -448,11 +450,11 @@ function onTimeChange(args: any) {
       <StackLayout row="0" rowSpan="2" col="0" class="bg-black opacity-30" @tap="showReminderPicker = false" />
 
       <!-- 选择器内容 -->
-      <StackLayout row="1" col="0" class="bg-white rounded-t-2xl">
+      <StackLayout row="1" col="0" class="bg-theme-card rounded-t-2xl">
         <!-- 选择器标题栏 -->
-        <GridLayout columns="auto, *, auto" class="p-4 border-b border-gray-100">
-          <Label col="0" text="取消" class="text-base text-gray-500" @tap="showReminderPicker = false" />
-          <Label col="1" text="选择提醒时间" class="text-base font-medium text-center text-gray-800" />
+        <GridLayout columns="auto, *, auto" class="p-4 border-b border-theme-light">
+          <Label col="0" text="取消" class="text-base text-theme-secondary" @tap="showReminderPicker = false" />
+          <Label col="1" text="选择提醒时间" class="text-base font-medium text-center text-theme-primary" />
           <Label col="2" text="" />
         </GridLayout>
 
@@ -462,17 +464,12 @@ function onTimeChange(args: any) {
             <StackLayout
               v-for="option in reminderOptions"
               :key="option.value"
-              class="p-4 border-b border-gray-100"
+              class="p-4 border-b border-theme-light"
               @tap="selectReminderOption(option.value)"
             >
               <GridLayout columns="*, auto">
-                <Label col="0" :text="option.label" class="text-base text-gray-800" />
-                <Label
-                  v-if="reminderMinutes === option.value"
-                  col="1"
-                  text="✓"
-                  class="text-orange-500 text-lg"
-                />
+                <Label col="0" :text="option.label" class="text-base text-theme-primary" />
+                <Label v-if="reminderMinutes === option.value" col="1" text="✓" class="text-theme-brand text-lg" />
               </GridLayout>
             </StackLayout>
           </StackLayout>

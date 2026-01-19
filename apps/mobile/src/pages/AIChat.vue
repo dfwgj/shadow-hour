@@ -5,52 +5,52 @@
       <!-- 主内容 -->
       <GridLayout row="0" col="0" rows="auto, auto, *, auto, auto">
         <!-- 状态栏占位 -->
-        <StackLayout row="0" :height="statusBarHeight" class="bg-white" />
+        <StackLayout row="0" :height="statusBarHeight" class="bg-theme-card" />
 
         <!-- 头部 -->
-        <GridLayout row="1" columns="auto, *, auto, auto, auto" class="bg-white p-3 border-b border-gray-100">
-          <Label col="0" text="←" class="text-2xl text-gray-600 p-2" @tap="goBack" />
+        <GridLayout row="1" columns="auto, *, auto, auto, auto" class="bg-theme-card p-3 border-b border-theme-light">
+          <Label col="0" text="←" class="text-2xl text-theme-secondary p-2" @tap="goBack" />
           <StackLayout col="1" class="horizontal-center">
-            <Label text="智能安排" class="text-lg font-bold text-gray-800" />
-            <Label :text="currentModelName" class="text-xs text-gray-500 mt-1" />
+            <Label text="智能安排" class="text-lg font-bold text-theme-primary" />
+            <Label :text="currentModelName" class="text-xs text-theme-secondary mt-1" />
           </StackLayout>
-          <Label col="2" text="＋" class="text-xl text-gray-600 p-2" @tap="createNewSession" />
-          <Label col="3" text="📋" class="text-xl text-gray-600 p-2" @tap="toggleHistory" />
-          <Label col="4" text="⚙" class="text-xl text-gray-600 p-2" @tap="openConfig" />
+          <Label col="2" text="＋" class="text-xl text-theme-secondary p-2" @tap="createNewSession" />
+          <Label col="3" text="📋" class="text-xl text-theme-secondary p-2" @tap="toggleHistory" />
+          <Label col="4" text="⚙" class="text-xl text-theme-secondary p-2" @tap="openConfig" />
         </GridLayout>
 
         <!-- 消息列表 -->
-        <ScrollView row="2" ref="scrollViewRef" class="bg-gray-50">
+        <ScrollView row="2" ref="scrollViewRef" class="bg-theme-secondary">
           <StackLayout class="p-4">
             <!-- 欢迎消息 -->
             <StackLayout v-if="messages.length === 0" class="p-8">
               <Label text="👋" class="text-6xl text-center" />
-              <Label text="你好！我是智能日程助手" class="text-xl font-bold text-center text-gray-800 mt-4" />
+              <Label text="你好！我是智能日程助手" class="text-xl font-bold text-center text-theme-primary mt-4" />
               <Label
                 text="我可以帮你安排日程、设置提醒、查询日程信息"
-                class="text-sm text-gray-500 text-center mt-2"
+                class="text-sm text-theme-secondary text-center mt-2"
                 textWrap="true"
               />
 
               <!-- API Key 未配置提示 -->
-              <StackLayout v-if="!hasApiKey" class="bg-yellow-50 rounded-xl p-4 mt-6">
+              <StackLayout v-if="!hasApiKey" class="bg-theme-warning rounded-xl p-4 mt-6" style="opacity: 0.2">
                 <GridLayout columns="auto, *">
                   <Label col="0" text="⚠️" class="text-xl mr-2" />
                   <StackLayout col="1">
-                    <Label text="请先配置 API Key" class="text-yellow-800 font-medium" />
-                    <Label text="点击右上角设置按钮进行配置" class="text-yellow-600 text-sm" />
+                    <Label text="请先配置 API Key" class="text-theme-warning font-medium" />
+                    <Label text="点击右上角设置按钮进行配置" class="text-theme-warning text-sm" />
                   </StackLayout>
                 </GridLayout>
               </StackLayout>
 
               <!-- 快捷操作 -->
-              <Label v-if="hasApiKey" text="试试这些：" class="text-sm text-gray-600 mt-8 mb-2" />
+              <Label v-if="hasApiKey" text="试试这些：" class="text-sm text-theme-secondary mt-8 mb-2" />
               <StackLayout v-if="hasApiKey">
                 <Label
                   v-for="suggestion in suggestions"
                   :key="suggestion"
                   :text="suggestion"
-                  class="bg-white p-3 rounded-xl text-gray-700 mb-2"
+                  class="bg-theme-card p-3 rounded-xl text-theme-primary mb-2"
                   @tap="sendQuickMessage(suggestion)"
                 />
               </StackLayout>
@@ -65,13 +65,14 @@
               <StackLayout
                 :class="[
                   'rounded-2xl p-3 max-w-[85%]',
-                  message.role === 'user' ? 'bg-purple-100 rounded-tr-sm' : 'bg-white rounded-tl-sm'
+                  message.role === 'user' ? 'bg-theme-brand rounded-tr-sm' : 'bg-theme-card rounded-tl-sm'
                 ]"
+                :style="message.role === 'user' ? 'opacity: 0.15' : ''"
               >
-                <Label :text="message.role === 'user' ? '你' : 'AI 助手'" class="text-xs text-gray-500 mb-1" />
+                <Label :text="message.role === 'user' ? '你' : 'AI 助手'" class="text-xs text-theme-tertiary mb-1" />
                 <Label
                   :text="message.role === 'user' ? message.content : parseMarkdown(message.content)"
-                  :class="message.role === 'user' ? 'text-purple-900' : 'text-gray-800'"
+                  :class="message.role === 'user' ? 'text-theme-brand' : 'text-theme-primary'"
                   textWrap="true"
                 />
               </StackLayout>
@@ -79,28 +80,28 @@
 
             <!-- 流式输出中 -->
             <StackLayout v-if="streamingText" class="items-start mb-4">
-              <StackLayout class="bg-white rounded-2xl rounded-tl-sm p-3 max-w-[85%]">
-                <Label text="AI 助手" class="text-xs text-gray-500 mb-1" />
-                <Label :text="parseMarkdown(streamingText)" class="text-gray-800" textWrap="true" />
-                <Label text="▌" class="text-purple-500" />
+              <StackLayout class="bg-theme-card rounded-2xl rounded-tl-sm p-3 max-w-[85%]">
+                <Label text="AI 助手" class="text-xs text-theme-tertiary mb-1" />
+                <Label :text="parseMarkdown(streamingText)" class="text-theme-primary" textWrap="true" />
+                <Label text="▌" class="text-theme-brand" />
               </StackLayout>
             </StackLayout>
 
             <!-- 加载中 -->
             <StackLayout v-if="isProcessing && !streamingText" class="items-start mb-4">
-              <StackLayout class="bg-white rounded-2xl rounded-tl-sm p-3">
+              <StackLayout class="bg-theme-card rounded-2xl rounded-tl-sm p-3">
                 <ActivityIndicator busy="true" class="h-6 w-6" />
-                <Label text="思考中..." class="text-sm text-gray-500 mt-1" />
+                <Label text="思考中..." class="text-sm text-theme-secondary mt-1" />
               </StackLayout>
             </StackLayout>
 
             <!-- 错误提示 -->
-            <StackLayout v-if="errorMessage" class="bg-red-50 rounded-xl p-4 mb-4">
+            <StackLayout v-if="errorMessage" class="bg-theme-error rounded-xl p-4 mb-4" style="opacity: 0.15">
               <GridLayout columns="auto, *">
                 <Label col="0" text="❌" class="text-xl mr-2" />
                 <StackLayout col="1">
-                  <Label text="出错了" class="text-red-800 font-medium" />
-                  <Label :text="errorMessage" class="text-red-600 text-sm" textWrap="true" />
+                  <Label text="出错了" class="text-theme-error font-medium" />
+                  <Label :text="errorMessage" class="text-theme-error text-sm" textWrap="true" />
                 </StackLayout>
               </GridLayout>
             </StackLayout>
@@ -108,8 +109,8 @@
         </ScrollView>
 
         <!-- 输入区域 -->
-        <StackLayout row="3" class="bg-white border-t border-gray-100 p-3">
-          <GridLayout columns="*, auto" class="bg-gray-100 rounded-full px-4">
+        <StackLayout row="3" class="bg-theme-card border-t border-theme-light p-3">
+          <GridLayout columns="*, auto" class="bg-theme-tertiary rounded-full px-4">
             <TextField
               col="0"
               v-model="inputText"
@@ -121,14 +122,14 @@
             <Label
               col="1"
               :text="isProcessing ? '⏹' : '➤'"
-              :class="['text-2xl p-2', canSend ? 'text-purple-500' : 'text-gray-400']"
+              :class="['text-2xl p-2', canSend ? 'text-theme-brand' : 'text-theme-tertiary']"
               @tap="isProcessing ? abort() : sendMessage()"
             />
           </GridLayout>
         </StackLayout>
 
         <!-- 底部安全区域 -->
-        <StackLayout row="4" :height="bottomSafeArea" class="bg-white" />
+        <StackLayout row="4" :height="bottomSafeArea" class="bg-theme-card" />
       </GridLayout>
 
       <!-- 历史记录抽屉 -->

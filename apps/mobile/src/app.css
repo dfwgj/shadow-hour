@@ -1,7 +1,366 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================
+   全局样式配置
+   支持日间/夜间主题切换
+   ============================================ */
+
+/* ---- 自定义字体大小 ---- */
 .text-mxs {
-  font-size: 0.60rem;
-  line-height: 1rem;
+  font-size: 10;
+}
+
+/* ============================================
+   日间主题 (默认)
+   ============================================ */
+.theme-light,
+Page {
+  /* 背景色 */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F9FAFB;
+  --bg-tertiary: #F3F4F6;
+
+  /* 文字颜色 */
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-inverse: #FFFFFF;
+
+  /* 品牌色 */
+  --primary: #0038BD;
+  --primary-light: #01DAFF;
+  --primary-dark: #0038BD;
+  
+  /* 功能色 */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+
+  /* 边框色 */
+  --border: #E5E7EB;
+  --border-light: #F3F4F6;
+
+  /* 卡片背景 */
+  --card-bg: #FFFFFF;
+
+  /* 按钮 */
+  --btn-primary-bg: #F97316;
+  --btn-primary-text: #FFFFFF;
+  --btn-secondary-bg: #F3F4F6;
+  --btn-secondary-text: #374151;
+}
+
+/* ============================================
+   夜间主题
+   ============================================ */
+.theme-dark {
+  /* 背景色 */
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --bg-tertiary: #374151;
+
+  /* 文字颜色 */
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
+  --text-inverse: #111827;
+
+  /* 品牌色 */
+  --primary: #0038BD;
+  --primary-light: #01DAFF;
+  --primary-dark: #0038BD;
+
+  /* 功能色 */
+  --success: #34D399;
+  --warning: #FBBF24;
+  --error: #F87171;
+  --info: #60A5FA;
+
+  /* 边框色 */
+  --border: #374151;
+  --border-light: #4B5563;
+
+  /* 卡片背景 */
+  --card-bg: #1F2937;
+
+  /* 按钮 */
+  --btn-primary-bg: #0038BD;
+  --btn-primary-text: #111827;
+  --btn-secondary-bg: #374151;
+  --btn-secondary-text: #F9FAFB;
+}
+
+/* ============================================
+   主题工具类 - 背景色
+   ============================================ */
+.bg-theme-primary {
+  background-color: var(--bg-primary);
+}
+.bg-theme-secondary {
+  background-color: var(--bg-secondary);
+}
+.bg-theme-tertiary {
+  background-color: var(--bg-tertiary);
+}
+.bg-theme-card {
+  background-color: var(--card-bg);
+}
+
+/* ============================================
+   主题工具类 - 文字颜色
+   ============================================ */
+.text-theme-primary {
+  color: var(--text-primary);
+}
+.text-theme-secondary {
+  color: var(--text-secondary);
+}
+.text-theme-tertiary {
+  color: var(--text-tertiary);
+}
+.text-theme-inverse {
+  color: var(--text-inverse);
+}
+
+/* ============================================
+   主题工具类 - 品牌色
+   ============================================ */
+.text-theme-brand {
+  color: var(--primary);
+}
+.bg-theme-brand {
+  background-color: var(--primary);
+}
+.border-theme-brand {
+  border-color: var(--primary);
+}
+
+/* ============================================
+   主题工具类 - 功能色
+   ============================================ */
+.text-theme-success {
+  color: var(--success);
+}
+.text-theme-warning {
+  color: var(--warning);
+}
+.text-theme-error {
+  color: var(--error);
+}
+.text-theme-info {
+  color: var(--info);
+}
+
+.bg-theme-success {
+  background-color: var(--success);
+}
+.bg-theme-warning {
+  background-color: var(--warning);
+}
+.bg-theme-error {
+  background-color: var(--error);
+}
+.bg-theme-info {
+  background-color: var(--info);
+}
+
+/* ============================================
+   主题工具类 - 边框
+   ============================================ */
+.border-theme {
+  border-color: var(--border);
+}
+.border-theme-light {
+  border-color: var(--border-light);
+}
+
+/* ============================================
+   按钮样式
+   ============================================ */
+.btn {
+  padding: 12 24;
+  border-radius: 8;
+  font-size: 14;
+  font-weight: 500;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border-width: 1;
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.btn-sm {
+  padding: 8 16;
+  font-size: 12;
+  border-radius: 6;
+}
+
+.btn-lg {
+  padding: 16 32;
+  font-size: 16;
+  border-radius: 10;
+}
+
+.btn-round {
+  border-radius: 9999;
+}
+
+/* ============================================
+   卡片样式
+   ============================================ */
+.card {
+  background-color: var(--card-bg);
+  border-radius: 12;
+  padding: 16;
+}
+
+.card-elevated {
+  background-color: var(--card-bg);
+  border-radius: 12;
+  padding: 16;
+  android-elevation: 4;
+}
+
+/* ============================================
+   输入框样式
+   ============================================ */
+.input {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 8;
+  padding: 12 16;
+  font-size: 14;
+  border-width: 1;
+  border-color: var(--border);
+}
+
+.input:focus {
+  border-color: var(--primary);
+}
+
+/* ============================================
+   字体大小工具类
+   ============================================ */
+.text-xs {
+  font-size: 10;
+}
+.text-sm {
+  font-size: 12;
+}
+.text-base {
+  font-size: 14;
+}
+.text-lg {
+  font-size: 16;
+}
+.text-xl {
+  font-size: 18;
+}
+.text-2xl {
+  font-size: 20;
+}
+.text-3xl {
+  font-size: 24;
+}
+.text-4xl {
+  font-size: 30;
+}
+
+/* ============================================
+   字重工具类
+   ============================================ */
+.font-normal {
+  font-weight: 400;
+}
+.font-medium {
+  font-weight: 500;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.font-bold {
+  font-weight: 700;
+}
+
+/* ============================================
+   分割线
+   ============================================ */
+.divider {
+  height: 1;
+  background-color: var(--border);
+}
+
+.divider-light {
+  height: 1;
+  background-color: var(--border-light);
+}
+
+/* ============================================
+   夜间模式特定覆盖
+   ============================================ */
+.theme-dark .bg-white {
+  background-color: #1F2937;
+}
+
+.theme-dark .text-gray-900,
+.theme-dark .text-gray-800,
+.theme-dark .text-gray-700 {
+  color: #F9FAFB;
+}
+
+.theme-dark .text-gray-600,
+.theme-dark .text-gray-500 {
+  color: #D1D5DB;
+}
+
+.theme-dark .text-gray-400,
+.theme-dark .text-gray-300 {
+  color: #9CA3AF;
+}
+
+.theme-dark .border-gray-200,
+.theme-dark .border-gray-100 {
+  border-color: #374151;
+}
+
+.theme-dark .bg-gray-100,
+.theme-dark .bg-gray-50 {
+  background-color: #374151;
+}
+
+/* ============================================
+   午夜主题（北京时间特定时段）
+   使用独立的类名，因为 NativeScript 不完全支持层级选择器
+   ============================================ */
+.text-midnight-brand {
+  color: #116E15;
+}
+
+.bg-midnight-brand {
+  background-color: #116E15;
+}
+
+.border-midnight-brand {
+  border-color: #116E15;
 }

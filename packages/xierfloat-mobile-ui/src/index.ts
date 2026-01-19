@@ -26,3 +26,18 @@ export { YearView, MonthView, WeekView, WeekScheduleGrid } from "./components/ca
 export { EventCard } from "./components/card";
 export { ToastContainer, Toast, useToast } from "./components/toast";
 export type { ToastType, ToastPosition, ToastOptions, ToastInstance, IToastService } from "./components/toast";
+
+// 主题导出
+export {
+  uiColors,
+  useUITheme,
+  setDarkMode,
+  getIsDarkMode,
+  configureLightColors,
+  configureDarkColors,
+  configureTheme,
+  resetTheme,
+  defaultLightColors,
+  defaultDarkColors
+} from "./theme";
+export type { UIThemeColors } from "./theme";

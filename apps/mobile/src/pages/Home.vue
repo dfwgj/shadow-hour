@@ -4,24 +4,24 @@
       <!-- 使用外层 GridLayout 实现弹窗覆盖 -->
       <GridLayout rows="*" columns="*">
         <!-- 主内容 -->
-        <GridLayout row="0" col="0" rows="auto, auto, auto, *, auto" class="bg-gray-100">
+        <GridLayout row="0" col="0" rows="auto, auto, auto, *, auto" class="bg-theme-secondary">
           <!-- 状态栏占位 -->
           <StackLayout row="0" :height="statusBarHeight" />
           <!-- 头部标题 -->
-          <StackLayout row="1" class="bg-white p-3">
-            <Label :text="headerTitle" class="text-2xl font-bold text-gray-800" />
+          <StackLayout row="1" class="bg-theme-card p-3">
+            <Label :text="headerTitle" class="text-2xl font-bold text-theme-primary" />
           </StackLayout>
 
           <!-- 视图切换器 -->
-          <GridLayout row="2" columns="*, *, *, *" class="bg-gray-100 mx-4 rounded-3xl p-1 mt-2">
+          <GridLayout row="2" columns="*, *, *, *" class="bg-theme-secondary mx-4 rounded-3xl p-1 mt-2">
             <Label
               v-for="(tab, index) in viewTabs"
               :key="tab.type"
               :col="index"
               :text="tab.label"
               :class="[
-                'text-center py-2 text-sm text-gray-800 rounded-2xl',
-                currentView === tab.type ? 'bg-white font-medium' : ''
+                'text-center py-2 text-sm text-theme-primary rounded-2xl',
+                currentView === tab.type ? 'bg-theme-card font-medium' : ''
               ]"
               @tap="switchView(tab.type)"
             />
@@ -39,7 +39,7 @@
                 :selected-date="selectedDate"
                 :first-day-of-week="firstDayOfWeek"
                 :show-today="true"
-                color="#F97316"
+                :color="getColor('primary')"
                 @select="onDateSelect"
                 @month-tap="onYearMonthTap"
                 @swipe="onYearSwipe"
@@ -55,12 +55,13 @@
                   :first-day-of-week="firstDayOfWeek"
                   :show-lunar="showLunar"
                   :show-outside-days="true"
+                  :color="getColor('primary')"
                   @select="onDateSelect"
                   @swipe="onSwipe"
                 />
                 <!-- 今日信息 -->
                 <GridLayout columns="*, auto" class="py-3 px-4">
-                  <Label col="0" :text="todayInfo" class="text-sm text-gray-500" />
+                  <Label col="0" :text="todayInfo" class="text-sm text-theme-secondary" />
                 </GridLayout>
                 <!-- 事件卡片 -->
                 <StackLayout class="px-4" v-if="eventList.length > 0">
@@ -70,19 +71,19 @@
                     :title="event.summary"
                     :start-time="event.dtStart"
                     :end-time="event.dtEnd"
-                    color="#F97316"
+                    :color="getColor('primary')"
                     class="mb-3"
                     @tap="onEventTap(event)"
                     @delete="onDeleteEvent(event.uid)"
                   />
                 </StackLayout>
-                <Label v-else text="暂无日程" class="text-base text-gray-500 text-center p-12" />
+                <Label v-else text="暂无日程" class="text-base text-theme-secondary text-center p-12" />
               </StackLayout>
               <!-- 日程视图 -->
               <StackLayout v-else-if="currentView === 'schedule'">
                 <!-- 今日信息 -->
                 <GridLayout columns="*, auto" class="py-3 px-4">
-                  <Label col="0" :text="todayScheduleInfo" class="text-sm text-gray-500" />
+                  <Label col="0" :text="todayScheduleInfo" class="text-sm text-theme-secondary" />
                 </GridLayout>
                 <!-- 事件卡片 -->
                 <StackLayout class="px-4" v-if="todayEvents.length > 0">
@@ -92,13 +93,13 @@
                     :title="event.summary"
                     :start-time="event.dtStart"
                     :end-time="event.dtEnd"
-                    color="#F97316"
+                    :color="getColor('primary')"
                     class="mb-3"
                     @tap="onScheduleEventTap(event)"
                     @delete="onDeleteTodayEvent(event.uid)"
                   />
                 </StackLayout>
-                <Label v-else text="今日暂无日程" class="text-base text-gray-500 text-center p-12" />
+                <Label v-else text="今日暂无日程" class="text-base text-theme-secondary text-center p-12" />
               </StackLayout>
             </StackLayout>
           </ScrollView>
@@ -115,13 +116,14 @@
               :first-day-of-week="firstDayOfWeek"
               :show-lunar="showLunar"
               :show-outside-days="true"
+              :color="getColor('primary')"
               @select="onDateSelect"
               @swipe="onWeekSwipe"
             />
             <!-- WeekScheduleGrid 独立滚动 -->
             <WeekScheduleGrid
               row="1"
-              class="mx-4 bg-white"
+              class="mx-4 bg-theme-card"
               :selected-date="selectedDate"
               :first-day-of-week="firstDayOfWeek"
               :events="weekEvents"
@@ -133,32 +135,35 @@
           </GridLayout>
 
           <!-- 底部导航 -->
-          <GridLayout row="4" columns="*, *" class="h-16 bg-white border-t border-gray-100">
-            <StackLayout col="0" class="horizontal-center vertical-center" @tap="switchNav('calendar')">
+          <GridLayout row="4" columns="*, *" class="h-16 bg-theme-card border-t border-theme-light">
+            <StackLayout col="0" horizontalAlignment="center" verticalAlignment="center" @tap="switchNav('calendar')">
               <Label
                 text="日程"
-                :class="['text-sm text-center', currentNav === 'calendar' ? 'text-orange-500' : 'text-gray-500']"
+                :class="[
+                  'text-md text-center',
+                  currentNav === 'calendar' ? getBrandClass('text') : 'text-theme-secondary'
+                ]"
               />
             </StackLayout>
-            <StackLayout col="1" class="horizontal-center vertical-center" @tap="switchNav('today')">
+            <StackLayout col="1" horizontalAlignment="center" verticalAlignment="center" @tap="switchNav('today')">
               <Label
                 text="智能安排"
-                :class="['text-sm text-center', currentNav === 'today' ? 'text-orange-500' : 'text-gray-500']"
+                :class="['text-md text-center', currentNav === 'today' ? 'text-theme-brand' : 'text-theme-secondary']"
               />
             </StackLayout>
           </GridLayout>
 
           <GridLayout row="2" rowSpan="2" columns="*, auto" rows="*, auto" class="pointer-events-none">
-            <StackLayout
+            <GridLayout
               col="1"
               row="1"
-              class="w-14 h-14 bg-white rounded-full m-4"
+              class="w-14 h-14 bg-theme-card rounded-full m-4"
               androidElevation="4"
               boxShadow="0 4 10 rgba(0,0,0,0.15)"
               @tap="openAddEvent"
             >
-              <Label text="+" class="text-4xl text-orange-500 text-center" style="line-height: 56" />
-            </StackLayout>
+              <Label text="+" :class="[getBrandClass('text'), 'text-4xl text-center']" verticalAlignment="center" />
+            </GridLayout>
           </GridLayout>
         </GridLayout>
 
@@ -180,10 +185,10 @@
   </Frame>
 </template>
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch, $navigateTo } from "nativescript-vue";
+import { ref, computed, onMounted, $navigateTo, onUnmounted } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
-import { solarToLunar, getYearInfo } from "../utils/lunar";
+import { solarToLunar } from "../utils/lunar";
 import { notificationService } from "../services/notification";
 import {
   MonthView,
@@ -198,7 +203,8 @@ import AddEventModal from "../components/AddEventModal.vue";
 import AIChat from "./AIChat.vue";
 import { CalendarEvent } from "~/types/calendar";
 import { Dialogs } from "@nativescript/core";
-
+import { useTheme } from "../composables/useTheme";
+const { getBrandClass, getColor, initTheme, destroyTheme } = useTheme();
 const monthViewRef = ref<InstanceType<typeof MonthView> | null>(null);
 const yearViewRef = ref<InstanceType<typeof YearView> | null>(null);
 const weekViewRef = ref<InstanceType<typeof WeekView> | null>(null);
@@ -360,19 +366,27 @@ async function switchView(type: ViewType) {
 
 // 底部导航切换
 function switchNav(type: NavType) {
-  if (type === 'today') {
+  if (type === "today") {
     // 跳转到 AI 聊天页面
     navigateToAIChat();
     return;
   }
   currentNav.value = type;
 }
+onMounted(() => {
+  // 初始化主题，会自动检测并应用午夜颜色
+  initTheme();
+});
 
+onUnmounted(() => {
+  // 清理定时器
+  destroyTheme();
+});
 // 跳转到 AI 聊天页面
 function navigateToAIChat() {
   $navigateTo(AIChat, {
     transition: {
-      name: 'slide',
+      name: "slide",
       duration: 200
     }
   });
