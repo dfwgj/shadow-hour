@@ -42,3 +42,8 @@ coverage/
 
 #promptx
 .promptx/
+
+# Android keystore (sensitive)
+*.keystore
+*.jks
+keystore/

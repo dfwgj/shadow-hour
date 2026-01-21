@@ -4,7 +4,7 @@
  * @author xierfloat
  */
 import { LocalNotifications } from "@nativescript/local-notifications";
-import { isAndroid, Device, Utils } from "@nativescript/core";
+import { isAndroid, Device, Utils, Application } from "@nativescript/core";
 
 // Android SDK 类型声明
 declare const android: any;
@@ -103,6 +103,133 @@ export class NotificationService {
       console.error("[NotificationService] 检查权限失败:", error);
       return false;
     }
+  }
+
+  /**
+   * 检查是否已忽略电池优化
+   */
+  isIgnoringBatteryOptimizations(): boolean {
+    if (!isAndroid) return true;
+
+    try {
+      const sdkVersion = parseInt(Device.sdkVersion, 10);
+      if (sdkVersion < 23) return true; // Android 6.0 以下不需要
+
+      const context = Utils.android.getApplicationContext();
+      if (!context) return false;
+
+      const powerManager = context.getSystemService(android.content.Context.POWER_SERVICE);
+      const packageName = context.getPackageName();
+
+      return powerManager.isIgnoringBatteryOptimizations(packageName);
+    } catch (error) {
+      console.error("[NotificationService] 检查电池优化状态失败:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 请求忽略电池优化（重要：后台通知必需）
+   */
+  requestIgnoreBatteryOptimizations(): void {
+    if (!isAndroid) return;
+
+    try {
+      const sdkVersion = parseInt(Device.sdkVersion, 10);
+      if (sdkVersion < 23) return;
+
+      if (this.isIgnoringBatteryOptimizations()) {
+        console.log("[NotificationService] 已忽略电池优化");
+        return;
+      }
+
+      const context = Utils.android.getApplicationContext();
+      if (!context) return;
+
+      const packageName = context.getPackageName();
+      const intent = new android.content.Intent();
+      intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+      intent.setData(android.net.Uri.parse("package:" + packageName));
+      intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+
+      context.startActivity(intent);
+      console.log("[NotificationService] 已请求忽略电池优化");
+    } catch (error) {
+      console.error("[NotificationService] 请求忽略电池优化失败:", error);
+    }
+  }
+
+  /**
+   * 检查精确闹钟权限 (Android 12+)
+   */
+  canScheduleExactAlarms(): boolean {
+    if (!isAndroid) return true;
+
+    try {
+      const sdkVersion = parseInt(Device.sdkVersion, 10);
+      if (sdkVersion < 31) return true; // Android 12 以下不需要
+
+      const context = Utils.android.getApplicationContext();
+      if (!context) return false;
+
+      const alarmManager = context.getSystemService(android.content.Context.ALARM_SERVICE);
+      return alarmManager.canScheduleExactAlarms();
+    } catch (error) {
+      console.error("[NotificationService] 检查精确闹钟权限失败:", error);
+      return false;
+    }
+  }
+
+  /**
+   * 打开精确闹钟设置 (Android 12+)
+   */
+  openExactAlarmSettings(): void {
+    if (!isAndroid) return;
+
+    try {
+      const sdkVersion = parseInt(Device.sdkVersion, 10);
+      if (sdkVersion < 31) return;
+
+      const context = Utils.android.getApplicationContext();
+      if (!context) return;
+
+      const intent = new android.content.Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+      intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+
+      context.startActivity(intent);
+      console.log("[NotificationService] 已打开精确闹钟设置");
+    } catch (error) {
+      console.error("[NotificationService] 打开精确闹钟设置失败:", error);
+    }
+  }
+
+  /**
+   * 完整的权限检查和请求（推荐在应用启动时调用）
+   */
+  async ensureAllPermissions(): Promise<{ notification: boolean; battery: boolean; exactAlarm: boolean }> {
+    const result = {
+      notification: false,
+      battery: false,
+      exactAlarm: false
+    };
+
+    // 1. 通知权限
+    result.notification = await this.requestPermission();
+
+    // 2. 电池优化
+    result.battery = this.isIgnoringBatteryOptimizations();
+    if (!result.battery) {
+      console.warn("[NotificationService] 建议关闭电池优化以确保后台通知正常");
+    }
+
+    // 3. 精确闹钟权限 (Android 12+)
+    result.exactAlarm = this.canScheduleExactAlarms();
+    if (!result.exactAlarm) {
+      console.warn("[NotificationService] 需要精确闹钟权限以确保定时通知准确");
+    }
+
+    console.log("[NotificationService] 权限状态:", result);
+    return result;
   }
 
   /**

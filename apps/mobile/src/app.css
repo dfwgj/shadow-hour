@@ -37,11 +37,13 @@ Page {
   --success: #10B981;
   --warning: #F59E0B;
   --error: #EF4444;
+  --error-light: #f08d8d;
   --info: #3B82F6;
 
   /* 边框色 */
   --border: #E5E7EB;
   --border-light: #F3F4F6;
+  
 
   /* 卡片背景 */
   --card-bg: #FFFFFF;

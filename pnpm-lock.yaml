@@ -138,6 +138,9 @@ importers:
       '@nativescript/local-notifications':
         specifier: ^6.4.0
         version: 6.4.0
+      '@nstudio/nativescript-exoplayer':
+        specifier: ^6.2.0
+        version: 6.2.0
       nativescript-vue:
         specifier: 3.0.0-rc.3
         version: 3.0.0-rc.3(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)
@@ -174,6 +177,8 @@ importers:
         version: 5.9.3
 
   apps/mobile/platforms/android/app/build/intermediates/assets/debug/mergeDebugAssets/app: {}
+
+  apps/mobile/platforms/android/app/build/intermediates/assets/release/mergeReleaseAssets/app: {}
 
   apps/mobile/platforms/android/app/src/main/assets/app: {}
 
@@ -1086,6 +1091,9 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
+
+  '@nstudio/nativescript-exoplayer@6.2.0':
+    resolution: {integrity: sha512-drZ1YHJciuCtkaWutHGYpzEdP6H1d7OrZusKH7sd1yJyTqx/7boFE49pjbEMS+5q2D4TVcbdBfW2k3tEv1CuUw==}
 
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
@@ -6498,6 +6506,8 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.1
+
+  '@nstudio/nativescript-exoplayer@6.2.0': {}
 
   '@one-ini/wasm@0.1.1': {}
 

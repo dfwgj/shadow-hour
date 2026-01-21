@@ -5,12 +5,16 @@
   "private": true,
   "scripts": {
     "dev": "ns run android",
-    "console": " C:\\Users\\DF\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe logcat -s JS:*"
+    "build": "ns build android",
+    "build:release": "ns build android --release --key-store-path ./keystore/release.keystore --key-store-password shadowhour --key-store-alias shadowhour --key-store-alias-password shadowhour",
+    "clean": "ns clean",
+    "console": "C:\\Users\\DF\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe logcat -s JS:*"
   },
   "dependencies": {
     "@nativescript-community/sqlite": "^3.5.1",
     "@nativescript/core": "~8.8.6",
     "@nativescript/local-notifications": "^6.4.0",
+    "@nstudio/nativescript-exoplayer": "^6.2.0",
     "nativescript-vue": "3.0.0-rc.3"
   },
   "devDependencies": {
@@ -20,8 +24,8 @@
     "@nativescript/webpack": "~5.0.0",
     "@types/node": "~17.0.21",
     "@xierfloat-monorepo/http-stream": "workspace:*",
-    "@xierfloat-monorepo/mobile-ui": "workspace:*",
     "@xierfloat-monorepo/mobile-ai": "workspace:*",
+    "@xierfloat-monorepo/mobile-ui": "workspace:*",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.7.3"
   }

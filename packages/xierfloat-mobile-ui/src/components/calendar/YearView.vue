@@ -173,7 +173,7 @@ defineExpose({
 
 <template>
   <ScrollView @touch="onTouch">
-    <StackLayout ref="contentRef" class="p-2 bg-gray-100">
+    <StackLayout ref="contentRef" class="p-2 bg-transparent">
       <!-- 月份网格 3x4 -->
       <GridLayout columns="*, *, *" rows="auto, auto, auto, auto">
         <StackLayout

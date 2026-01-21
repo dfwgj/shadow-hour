@@ -31,7 +31,7 @@
                 v-model="apiKey"
                 hint="输入你的硅基流动 API Key"
                 secure="true"
-                class="bg-theme-tertiary rounded-xl p-3"
+                class="bg-theme-tertiary rounded-lg p-2"
               />
               <Label text="前往获取 API Key →" class="text-theme-info text-sm mt-2" @tap="openApiKeyPage" />
             </StackLayout>
@@ -39,7 +39,7 @@
             <!-- 模型选择 -->
             <StackLayout class="mb-4">
               <Label text="模型" class="text-theme-secondary mb-2" />
-              <TextField v-model="model" hint="zai-org/GLM-4.6V" class="bg-theme-tertiary rounded-xl p-3" />
+              <TextField v-model="model" hint="zai-org/GLM-4.6V" class="bg-theme-tertiary rounded-lg p-2" />
             </StackLayout>
 
             <!-- 推荐模型 -->
@@ -88,7 +88,7 @@
               <GridLayout columns="auto, *">
                 <Label col="0" :text="feature.icon" class="text-xl mr-3" />
                 <StackLayout col="1">
-                  <Label :text="feature.title" class="text-theme-primary font-medium" />
+                  <Label :text="feature.title" class="text-theme-primary text-lg" />
                   <Label :text="feature.desc" class="text-sm text-theme-secondary" textWrap="true" />
                 </StackLayout>
               </GridLayout>
@@ -96,14 +96,15 @@
           </StackLayout>
 
           <!-- 隐私说明 -->
-          <StackLayout class="bg-theme-info rounded-2xl p-4" style="opacity: 0.15">
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <Label text="隐私保护" class="text-lg font-bold text-theme-primary mb-4" />
             <GridLayout columns="auto, *">
               <StackLayout col="1">
-                <Label text="隐私保护" class="text-theme-info font-medium" />
                 <Label
-                  text="你的 API Key 仅存储在本地设备，不会上传到任何服务器。所有对话数据也仅保存在本地。"
-                  class="text-sm text-theme-info"
+                  text="您的 API Key 仅存储在本地设备，不会上传到任何服务器。所有对话数据也仅保存在本地。"
+                  class="text-sm text-theme-primary"
                   textWrap="true"
+                  lineHeight="2"
                 />
               </StackLayout>
             </GridLayout>

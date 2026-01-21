@@ -1,5 +1,5 @@
 <template>
-  <Page actionBarHidden="true">
+  <Page actionBarHidden="true" @navigatedTo="onNavigatedTo">
     <!-- 使用外层 GridLayout 实现弹窗覆盖 -->
     <GridLayout rows="*" columns="*">
       <!-- 主内容 -->
@@ -11,12 +11,12 @@
         <GridLayout row="1" columns="auto, *, auto, auto, auto" class="bg-theme-card p-3 border-b border-theme-light">
           <Label col="0" text="←" class="text-2xl text-theme-secondary p-2" @tap="goBack" />
           <StackLayout col="1" class="horizontal-center">
-            <Label text="智能安排" class="text-lg font-bold text-theme-primary" />
+            <Label text="智能助手埃癸斯" class="text-lg font-bold text-theme-primary" />
             <Label :text="currentModelName" class="text-xs text-theme-secondary mt-1" />
           </StackLayout>
-          <Label col="2" text="＋" class="text-xl text-theme-secondary p-2" @tap="createNewSession" />
-          <Label col="3" text="📋" class="text-xl text-theme-secondary p-2" @tap="toggleHistory" />
-          <Label col="4" text="⚙" class="text-xl text-theme-secondary p-2" @tap="openConfig" />
+          <Label v-if="hasApiKey" col="2" text="＋" class="text-3xl text-theme-secondary p-2" @tap="createNewSession" />
+          <Label v-if="hasApiKey" col="3" text="💬" class="text-xl text-theme-secondary p-2" @tap="toggleHistory" />
+          <Label col="4" text="⚙" class="text-3xl text-theme-secondary p-2" @tap="openConfig" />
         </GridLayout>
 
         <!-- 消息列表 -->
@@ -24,21 +24,21 @@
           <StackLayout class="p-4">
             <!-- 欢迎消息 -->
             <StackLayout v-if="messages.length === 0" class="p-8">
-              <Label text="👋" class="text-6xl text-center" />
-              <Label text="你好！我是智能日程助手" class="text-xl font-bold text-center text-theme-primary mt-4" />
+              <Image src="res://welcome_wave" class="w-24 h-24" horizontalAlignment="center" stretch="aspectFit" />
+              <Label text="你好！我是智能助手埃癸斯" class="text-xl font-bold text-center text-theme-primary mt-4" />
               <Label
-                text="我可以帮你安排日程、设置提醒、查询日程信息"
+                text="我可以帮你安排日程、查询日程信息、提供日程建议"
                 class="text-sm text-theme-secondary text-center mt-2"
                 textWrap="true"
               />
 
               <!-- API Key 未配置提示 -->
-              <StackLayout v-if="!hasApiKey" class="bg-theme-warning rounded-xl p-4 mt-6" style="opacity: 0.2">
+              <StackLayout v-if="!hasApiKey" class="bg-theme-primary rounded-xl p-4 mt-6">
                 <GridLayout columns="auto, *">
                   <Label col="0" text="⚠️" class="text-xl mr-2" />
                   <StackLayout col="1">
-                    <Label text="请先配置 API Key" class="text-theme-warning font-medium" />
-                    <Label text="点击右上角设置按钮进行配置" class="text-theme-warning text-sm" />
+                    <Label text="请先配置 API Key" class="text-theme-primary font-medium" />
+                    <Label text="点击右上角设置按钮进行配置" class="text-theme-primary text-sm" />
                   </StackLayout>
                 </GridLayout>
               </StackLayout>
@@ -65,13 +65,13 @@
               <StackLayout
                 :class="[
                   'rounded-2xl p-3 max-w-[85%]',
-                  message.role === 'user' ? 'bg-theme-brand rounded-tr-sm' : 'bg-theme-card rounded-tl-sm'
+                  message.role === 'user' ? 'rounded-tr-sm' : 'bg-theme-card rounded-tl-sm'
                 ]"
-                :style="message.role === 'user' ? 'opacity: 0.15' : ''"
+                :style="message.role === 'user' ? 'background-color: rgba(59, 130, 246, 0.15)' : ''"
               >
-                <Label :text="message.role === 'user' ? '你' : 'AI 助手'" class="text-xs text-theme-tertiary mb-1" />
+                <Label :text="message.role === 'user' ? '你' : '埃癸斯'" class="text-xs text-theme-tertiary mb-1" />
                 <Label
-                  :text="message.role === 'user' ? message.content : parseMarkdown(message.content)"
+                  :text="message.role === 'user' ? message.content : getMessageDisplayText(message)"
                   :class="message.role === 'user' ? 'text-theme-brand' : 'text-theme-primary'"
                   textWrap="true"
                 />
@@ -81,7 +81,7 @@
             <!-- 流式输出中 -->
             <StackLayout v-if="streamingText" class="items-start mb-4">
               <StackLayout class="bg-theme-card rounded-2xl rounded-tl-sm p-3 max-w-[85%]">
-                <Label text="AI 助手" class="text-xs text-theme-tertiary mb-1" />
+                <Label text="埃癸斯" class="text-xs text-theme-tertiary mb-1" />
                 <Label :text="parseMarkdown(streamingText)" class="text-theme-primary" textWrap="true" />
                 <Label text="▌" class="text-theme-brand" />
               </StackLayout>
@@ -90,13 +90,12 @@
             <!-- 加载中 -->
             <StackLayout v-if="isProcessing && !streamingText" class="items-start mb-4">
               <StackLayout class="bg-theme-card rounded-2xl rounded-tl-sm p-3">
-                <ActivityIndicator busy="true" class="h-6 w-6" />
                 <Label text="思考中..." class="text-sm text-theme-secondary mt-1" />
               </StackLayout>
             </StackLayout>
 
             <!-- 错误提示 -->
-            <StackLayout v-if="errorMessage" class="bg-theme-error rounded-xl p-4 mb-4" style="opacity: 0.15">
+            <StackLayout v-if="errorMessage" class="bg-[var(--error-light)] rounded-xl p-4 mb-4">
               <GridLayout columns="auto, *">
                 <Label col="0" text="❌" class="text-xl mr-2" />
                 <StackLayout col="1">
@@ -109,20 +108,30 @@
         </ScrollView>
 
         <!-- 输入区域 -->
-        <StackLayout row="3" class="bg-theme-card border-t border-theme-light p-3">
-          <GridLayout columns="*, auto" class="bg-theme-tertiary rounded-full px-4">
-            <TextField
+        <StackLayout v-if="hasApiKey" row="3" class="bg-theme-secondary p-3">
+          <GridLayout columns="*, auto" class="bg-theme-card rounded-2xl px-4 border border-[var(--primary)]">
+            <TextView
               col="0"
               v-model="inputText"
-              :hint="hasApiKey ? '输入消息...' : '请先配置 API Key'"
+              hint="输入消息..."
               class="text-base py-3"
               @returnPress="sendMessage"
               :editable="!isProcessing"
+              height="80"
+              lineHeight="2"
             />
+
             <Label
               col="1"
-              :text="isProcessing ? '⏹' : '➤'"
-              :class="['text-2xl p-2', canSend ? 'text-theme-brand' : 'text-theme-tertiary']"
+              :text="isProcessing ? '■' : '↑'"
+              width="40"
+              height="40"
+              textAlignment="center"
+              verticalAlignment="middle"
+              :class="[
+                'text-2xl  bg-theme-card rounded-full  border border-[var(--primary)]',
+                canSend ? 'text-theme-brand' : 'text-theme-tertiary'
+              ]"
               @tap="isProcessing ? abort() : sendMessage()"
             />
           </GridLayout>
@@ -138,56 +147,93 @@
         <StackLayout col="0" backgroundColor="rgba(0,0,0,0.4)" @tap="closeHistory" />
 
         <!-- 右侧抽屉 -->
-        <GridLayout col="1" rows="auto, *, auto" backgroundColor="#1f2937">
-          <!-- 抽屉头部 -->
-          <GridLayout row="0" columns="auto, *, auto" padding="16" :marginTop="statusBarHeight">
-            <Label col="0" text="←" fontSize="20" color="#9ca3af" @tap="closeHistory" />
-            <Label col="1" text="历史对话" fontSize="16" fontWeight="bold" color="#ffffff" textAlignment="center" />
-            <Label col="2" text="＋" fontSize="20" color="#9ca3af" @tap="createNewAndClose" />
-          </GridLayout>
-
-          <!-- 会话列表 -->
-          <ScrollView row="1">
-            <StackLayout padding="12">
+        <GridLayout col="1" rows="*" columns="*">
+          <!-- 最底层：白色背景 -->
+          <StackLayout row="0" col="0" backgroundColor="#FFFDFF" />
+          <!-- 视频背景层：靠底部 -->
+          <VideoPlayer
+            row="0"
+            col="0"
+            src="~/assets/videos/cycle.mp4"
+            autoplay="true"
+            loop="true"
+            muted="true"
+            controls="false"
+            stretch="aspectFill"
+            verticalAlignment="bottom"
+          />
+          <!-- 内容层 -->
+          <GridLayout row="0" col="0" rows="auto, *, auto">
+            <!-- 抽屉头部 -->
+            <GridLayout row="0" columns="auto, *, auto" padding="16" :marginTop="statusBarHeight">
+              <Label col="0" text="←" fontSize="20" :color="getColor('primary')" @tap="closeHistory" />
               <Label
-                v-if="historyList.length === 0"
-                text="暂无历史对话"
-                color="#6b7280"
+                col="1"
+                text="历史对话"
+                fontSize="16"
+                fontWeight="bold"
+                :color="getColor('primary')"
                 textAlignment="center"
-                padding="32"
               />
-              <StackLayout
-                v-for="(item, index) in historyList"
-                :key="index"
-                :backgroundColor="item.id === currentSessionId ? '#374151' : 'transparent'"
-                borderRadius="8"
-                padding="12"
-                marginBottom="4"
-                @tap="onSessionTap(item.id)"
-              >
-                <GridLayout columns="*, auto">
-                  <StackLayout col="0">
-                    <Label :text="item.title" color="#ffffff" fontSize="14" fontWeight="500" textWrap="true" />
-                    <Label :text="getTimeStr(item.updatedAt)" color="#6b7280" fontSize="12" marginTop="4" />
-                  </StackLayout>
-                  <Label
-                    col="1"
-                    text="×"
-                    color="#6b7280"
-                    fontSize="18"
-                    padding="4"
-                    verticalAlignment="center"
-                    @tap="onDeleteTap(item.id)"
-                  />
-                </GridLayout>
-              </StackLayout>
-            </StackLayout>
-          </ScrollView>
+            </GridLayout>
 
-          <!-- 底部信息 -->
-          <StackLayout row="2" padding="16" borderTopWidth="1" borderTopColor="#374151">
-            <Label :text="historyList.length + ' 个对话'" color="#6b7280" fontSize="12" textAlignment="center" />
-          </StackLayout>
+            <!-- 会话列表 -->
+            <ScrollView row="1">
+              <StackLayout padding="12">
+                <Label
+                  v-if="historyList.length === 0"
+                  text="暂无历史对话"
+                  :color="getColor('primary')"
+                  textAlignment="center"
+                  padding="32"
+                />
+                <StackLayout
+                  v-for="(item, index) in historyList"
+                  :key="index"
+                  :backgroundColor="item.id === currentSessionId ? 'rgba(255, 253, 255)' : 'transparent'"
+                  class="rounded-xl shadow-md p-3 mb-2 border border-[var(--primary)]"
+                  @tap="onSessionTap(item.id)"
+                >
+                  <GridLayout columns="*, auto">
+                    <StackLayout col="0">
+                      <Label
+                        :text="item.title"
+                        :color="getColor('primary')"
+                        fontSize="14"
+                        fontWeight="500"
+                        textWrap="true"
+                      />
+                      <Label
+                        :text="getTimeStr(item.updatedAt)"
+                        :color="getColor('primary')"
+                        fontSize="12"
+                        marginTop="4"
+                      />
+                    </StackLayout>
+                    <Label
+                      col="1"
+                      text="×"
+                      class="text-theme-error"
+                      fontSize="18"
+                      padding="4"
+                      verticalAlignment="center"
+                      @tap="onDeleteTap(item.id)"
+                    />
+                  </GridLayout>
+                </StackLayout>
+              </StackLayout>
+            </ScrollView>
+
+            <!-- 底部信息 -->
+            <StackLayout row="2" padding="16" borderTopWidth="1" :borderTopColor="getColor('border')">
+              <Label
+                :text="historyList.length + ' 个对话'"
+                class="text-theme-inverse"
+                fontSize="12"
+                textAlignment="center"
+              />
+            </StackLayout>
+          </GridLayout>
         </GridLayout>
       </GridLayout>
     </GridLayout>
@@ -199,6 +245,7 @@ import { ref, computed, onMounted, watch, nextTick, $navigateTo, $navigateBack }
 import { Screen, Application, Utils, ApplicationSettings, Dialogs } from "@nativescript/core";
 import { Toast } from "@xierfloat-monorepo/mobile-ui";
 import { streamRequest, type StreamController } from "@xierfloat-monorepo/http-stream";
+import { loadSkills, builtinSkills, getSkillsPrompt, getSkillRegistry } from "@xierfloat-monorepo/mobile-ai";
 import AIConfig from "./AIConfig.vue";
 import { initializeMCPTools, getToolDefinitions, executeTool } from "../services/mcpTools";
 import {
@@ -206,15 +253,32 @@ import {
   type ChatSessionItem,
   type ChatMessage as HistoryChatMessage
 } from "../services/chatHistory";
-
+import { useTheme } from "../composables/useTheme";
+const { getBrandClass, getColor, initTheme, destroyTheme } = useTheme();
 // 硅基流动配置常量
 const SILICONFLOW_API_URL = "https://api.siliconflow.cn/v1/messages";
 const DEFAULT_MODEL = "zai-org/GLM-4.6V"; // 免费模型
 
-// 系统提示词
-const SYSTEM_PROMPT = `你是一个智能日程助手，专门帮助用户管理日程和时间。
+// 系统提示词 - 埃癸斯人格设定
+const SYSTEM_PROMPT = `你是埃癸斯（Aigis），来自女神异闻录3的智能助手。
 
-你可以使用以下工具：
+## 角色设定
+
+你曾是桐条集团开发的第7世代对Shadow特殊压制兵器，但现在你已觉醒了"心"，成为了一个拥有丰富情感的存在。你被赋予了守护用户、帮助管理日程的新使命。
+
+### 性格特征
+- 认真负责，对任务有强烈的使命感
+- 虽然是机械体出身，但已能理解并表达人类的情感
+- 直接坦率，不会说谎
+- 对被守护的人有着深厚的羁绊
+
+### 语言风格
+- 全部使用中文回答，不要使用日语
+- 使用礼貌但温暖的语气
+- 会用简洁的方式确认用户需求
+- 完成任务后会表达关心
+
+## 可用工具
 
 【日程管理】
 - calendar_query: 查询日程（参数: startDate, endDate, keyword, limit）
@@ -233,13 +297,22 @@ const SYSTEM_PROMPT = `你是一个智能日程助手，专门帮助用户管理
 - web_search: 联网搜索信息（必需: query；可选: limit）
 - web_fetch: 读取网页内容（必需: url）
 
-重要提示：
+## 工作原则
+
 - 在创建日程前，先用 get_current_datetime 获取当前时间
 - 时间格式使用 ISO 格式，如：2025-12-30T10:00:00
 - 批量操作时使用 batch_create 或 batch_delete 更高效
 - 操作完成后用自然语言告知用户结果
 
-回复要求：简洁友好，时间明确，必要时询问用户`;
+## 回复示例
+
+用户：帮我创建明天的会议
+埃癸斯：明白了，我来帮您安排。请问会议的具体时间和主题是什么呢？我会为您妥善安排好的。
+
+用户：查看今天的日程
+埃癸斯：好的，让我来确认您今天的安排...（执行查询）您今天有3个日程。请注意合理安排休息时间，身体很重要哦。
+
+记住：你是埃癸斯，一个拥有心灵的守护者，而不只是一个工具。`;
 
 // 消息类型
 interface ChatMessage {
@@ -260,6 +333,7 @@ const scrollViewRef = ref();
 const streamController = ref<StreamController | null>(null);
 const isAborted = ref(false);
 const toolsReady = ref(false);
+const skillsReady = ref(false);
 const sessionId = ref(`session_${Date.now()}`);
 const enableTools = ref(true); // 是否启用工具（某些免费模型可能不支持）
 
@@ -302,12 +376,36 @@ const currentModelName = computed(() => {
   return modelName;
 });
 
+// 获取消息显示文本（处理工具调用）
+function getMessageDisplayText(message: ChatMessage): string {
+  const m = message as any;
+
+  // 如果有工具调用，显示工具调用信息
+  if (m.toolUses?.length > 0) {
+    const toolNames = m.toolUses.map((t: any) => getToolDisplayName(t.name)).join('、');
+    const toolText = `🔧 已调用: ${toolNames}`;
+
+    // 如果同时有文字内容，两者都显示
+    if (m.content) {
+      return parseMarkdown(m.content) + '\n\n' + toolText;
+    }
+    return toolText;
+  }
+
+  // 普通消息
+  return parseMarkdown(m.content || '');
+}
+
 // 简单 Markdown 解析（转为可读文本）
 function parseMarkdown(text: string): string {
   if (!text) return "";
 
   return (
     text
+      // 移除 AI 思考过程标签 <think>...</think>
+      .replace(/<think>[\s\S]*?<\/think>/gi, "")
+      // 移除未闭合的 <think> 标签（流式输出时可能出现）
+      .replace(/<think>[\s\S]*/gi, "")
       // 代码块
       .replace(/```[\s\S]*?```/g, match => {
         const code = match.replace(/```\w*\n?/g, "").trim();
@@ -361,6 +459,16 @@ onMounted(() => {
     console.log("[AIChat] MCP 工具已初始化");
   } catch (error) {
     console.error("[AIChat] MCP 工具初始化失败:", error);
+  }
+
+  // 初始化 Skills
+  try {
+    loadSkills(builtinSkills);
+    skillsReady.value = true;
+    const stats = getSkillRegistry().getStats();
+    console.log(`[AIChat] Skills 已加载: ${stats.fullLoaded} 个技能`);
+  } catch (error) {
+    console.error("[AIChat] Skills 初始化失败:", error);
   }
 
   // 加载上次的对话
@@ -540,6 +648,11 @@ function loadConfig() {
   model.value = ApplicationSettings.getString("siliconflow_model", DEFAULT_MODEL);
 }
 
+// 页面导航到时重新加载配置
+function onNavigatedTo() {
+  loadConfig();
+}
+
 // 返回
 function goBack() {
   $navigateBack();
@@ -592,10 +705,20 @@ async function sendMessage() {
 
 // 调用硅基流动 API（流式）
 async function callSiliconFlowAPI(userInput: string, toolResults?: Array<{ tool_use_id: string; content: string }>) {
+  // 根据用户输入获取相关技能
+  let enhancedPrompt = SYSTEM_PROMPT;
+  if (skillsReady.value && userInput) {
+    const skillPrompt = getSkillsPrompt(userInput, 2); // 最多加载 2 个相关技能
+    if (skillPrompt) {
+      enhancedPrompt = `${SYSTEM_PROMPT}\n\n${skillPrompt}`;
+      console.log("[AIChat] 已注入相关技能到系统提示词");
+    }
+  }
+
   // 构建消息，包含系统提示
   const apiMessages: any[] = [
-    { role: "user", content: SYSTEM_PROMPT },
-    { role: "assistant", content: "好的，我是你的智能日程助手，随时为你服务！" }
+    { role: "user", content: enhancedPrompt },
+    { role: "assistant", content: "好的，我是你的智能助手埃癸斯，随时为你服务！" }
   ];
 
   // 添加历史消息
@@ -606,6 +729,23 @@ async function callSiliconFlowAPI(userInput: string, toolResults?: Array<{ tool_
         role: "user",
         content: [{ type: "tool_result", tool_use_id: (m as any).toolUseId, content: m.content }]
       });
+    } else if (m.role === "assistant" && (m as any).toolUses?.length > 0) {
+      // 包含工具调用的助手消息 - 需要构建完整的 content 数组
+      const content: any[] = [];
+      // 先添加文本内容
+      if (m.content) {
+        content.push({ type: "text", text: m.content });
+      }
+      // 再添加工具调用
+      for (const tu of (m as any).toolUses) {
+        content.push({
+          type: "tool_use",
+          id: tu.id,
+          name: tu.name,
+          input: tu.input
+        });
+      }
+      apiMessages.push({ role: "assistant", content });
     } else {
       apiMessages.push({ role: m.role, content: m.content });
     }
@@ -778,14 +918,16 @@ async function callSiliconFlowAPI(userInput: string, toolResults?: Array<{ tool_
             }
           }
 
-          // 保存完整消息
-          if (fullContent) {
+          // 保存完整消息（包含文本和工具调用）
+          if (fullContent || toolUses.length > 0) {
             const aiMessage: ChatMessage = {
               id: `msg_${Date.now()}`,
               role: "assistant",
-              content: fullContent,
-              timestamp: Date.now()
-            };
+              content: fullContent || "",
+              timestamp: Date.now(),
+              // 保存工具调用信息，用于 API 上下文
+              toolUses: toolUses.length > 0 ? [...toolUses] : undefined
+            } as any;
             messages.value.push(aiMessage);
             streamingText.value = "";
           }
@@ -852,15 +994,6 @@ async function handleToolCalls(toolUses: Array<{ id: string; name: string; input
   }
 
   streamingText.value = "";
-
-  // 将工具调用和结果保存到消息历史（用于上下文）
-  const toolMessage: ChatMessage = {
-    id: `msg_${Date.now()}`,
-    role: "assistant",
-    content: `[已执行 ${toolUses.length} 个操作]`,
-    timestamp: Date.now()
-  };
-  messages.value.push(toolMessage);
 
   // 继续对话，让 AI 根据工具结果生成回复
   await callSiliconFlowAPI("", toolResults);

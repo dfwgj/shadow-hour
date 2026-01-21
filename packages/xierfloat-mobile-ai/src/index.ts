@@ -132,3 +132,42 @@ export {
   type ChatOptions,
   type UseChatReturn
 } from "./composables";
+
+// ==================== Skills ====================
+export type {
+  SkillMetadata,
+  SkillContent,
+  Skill,
+  SkillSearchResult,
+  SkillLoaderConfig,
+  SkillRegistryConfig,
+  SkillRawData,
+  InlineSkillDefinition,
+  SkillPackage
+} from "./skills";
+
+export {
+  SkillLoadLevel,
+  parseSkill,
+  extractMetadata,
+  skillToPrompt,
+  skillsToPrompt,
+  SkillRegistry,
+  createSkillRegistry,
+  getSkillRegistry,
+  SkillLoader,
+  createSkillLoader,
+  getSkillLoader,
+  loadSkill,
+  loadSkills,
+  searchSkills,
+  getSkillsPrompt,
+  // Builtin skills
+  aigisBrainSkill,
+  scheduleOptimizationSkill,
+  meetingPreparationSkill,
+  weeklyReviewSkill,
+  timeEstimationSkill,
+  builtinSkillPackage,
+  builtinSkills
+} from "./skills";

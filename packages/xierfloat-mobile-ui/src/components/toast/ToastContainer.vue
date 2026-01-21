@@ -217,41 +217,45 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <FlexboxLayout
-    v-for="toast in toasts"
-    :key="toast.id"
-    :ref="(el: any) => setToastRef(toast.id, el)"
-    flexDirection="column"
-    alignItems="center"
-    justifyContent="center"
-    width="32%"
-    height="14%"
-    :verticalAlignment="toast.position === 'top' ? 'top' : toast.position === 'bottom' ? 'bottom' : 'center'"
-    horizontalAlignment="center"
-    :marginTop="toast.position === 'top' ? 60 : 0"
-    :marginBottom="toast.position === 'bottom' ? 60 : 0"
-    class="rounded-2xl p-4"
-    :style="{ backgroundColor: getTypeBgColor(toast.type) }"
-    @tap="removeToast(toast.id)"
-  >
-    <!-- 图标 -->
+  <GridLayout rows="*" columns="*">
     <FlexboxLayout
-      width="32"
-      height="32"
+      v-for="toast in toasts"
+      :key="toast.id"
+      :ref="(el: any) => setToastRef(toast.id, el)"
+      row="0"
+      col="0"
+      flexDirection="column"
       alignItems="center"
       justifyContent="center"
-      borderRadius="16"
-      :style="{ backgroundColor: getTypeColor(toast.type) }"
+      width="32%"
+      height="14%"
+      :verticalAlignment="toast.position === 'top' ? 'top' : toast.position === 'bottom' ? 'bottom' : 'center'"
+      horizontalAlignment="center"
+      :marginTop="toast.position === 'top' ? 60 : 0"
+      :marginBottom="toast.position === 'bottom' ? 60 : 0"
+      class="rounded-2xl p-4"
+      :style="{ backgroundColor: getTypeBgColor(toast.type) }"
+      @tap="removeToast(toast.id)"
     >
-      <Label :text="getTypeIcon(toast.type)" class="text-white text-lg font-bold" />
+      <!-- 图标 -->
+      <FlexboxLayout
+        width="32"
+        height="32"
+        alignItems="center"
+        justifyContent="center"
+        borderRadius="16"
+        :style="{ backgroundColor: getTypeColor(toast.type) }"
+      >
+        <Label :text="getTypeIcon(toast.type)" class="text-white text-lg font-bold" />
+      </FlexboxLayout>
+      <!-- 消息 -->
+      <Label
+        :text="toast.message"
+        class="text-lg mt-2"
+        :style="{ color: getTypeColor(toast.type) }"
+        textWrap="true"
+        textAlignment="center"
+      />
     </FlexboxLayout>
-    <!-- 消息 -->
-    <Label
-      :text="toast.message"
-      class="text-lg mt-2"
-      :style="{ color: getTypeColor(toast.type) }"
-      textWrap="true"
-      textAlignment="center"
-    />
-  </FlexboxLayout>
+  </GridLayout>
 </template>

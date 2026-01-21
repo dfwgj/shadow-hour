@@ -17,10 +17,15 @@
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 	<!-- 精确闹钟权限 (用于定时通知) -->
 	<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+	<uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 	<!-- 开机启动 (可选，用于重新调度通知) -->
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 	<!-- 振动权限 -->
 	<uses-permission android:name="android.permission.VIBRATE"/>
+	<!-- 唤醒锁 (后台通知) -->
+	<uses-permission android:name="android.permission.WAKE_LOCK"/>
+	<!-- 忽略电池优化 (重要：后台通知) -->
+	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
 	<application
 		android:name="com.tns.NativeScriptApplication"

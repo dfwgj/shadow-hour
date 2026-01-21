@@ -261,11 +261,42 @@ class NotificationServiceAdapter implements MCPNotificationService {
     const notificationId = `notif_${Date.now()}`;
     const numericId = notificationService.generateNotificationId(notificationId);
 
+    // 解析时间 - 处理多种格式
+    let scheduledDate: Date;
+    const scheduledAt = params.scheduledAt;
+
+    // 如果没有时区信息，当作本地时间处理
+    if (scheduledAt.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/)) {
+      // ISO 格式无时区，解析为本地时间
+      const [datePart, timePart] = scheduledAt.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hour, minute, second = 0] = timePart.split(':').map(Number);
+      scheduledDate = new Date(year, month - 1, day, hour, minute, second);
+    } else {
+      // 其他格式直接解析
+      scheduledDate = new Date(scheduledAt);
+    }
+
+    console.log(`[NotificationAdapter] 调度通知: ${params.title}`);
+    console.log(`[NotificationAdapter] 原始时间: ${scheduledAt}`);
+    console.log(`[NotificationAdapter] 解析时间: ${scheduledDate.toLocaleString()}`);
+    console.log(`[NotificationAdapter] 当前时间: ${new Date().toLocaleString()}`);
+
+    // 检查时间是否有效
+    if (isNaN(scheduledDate.getTime())) {
+      throw new Error(`无效的时间格式: ${scheduledAt}`);
+    }
+
+    // 检查是否在未来
+    if (scheduledDate.getTime() <= Date.now()) {
+      throw new Error(`调度时间必须是未来时间，收到: ${scheduledDate.toLocaleString()}`);
+    }
+
     await notificationService.scheduleNotification({
       id: numericId,
       title: params.title,
       body: params.body,
-      at: new Date(params.scheduledAt)
+      at: scheduledDate
     });
 
     // 保存到内存中以便查询
@@ -277,6 +308,7 @@ class NotificationServiceAdapter implements MCPNotificationService {
       data: params.data
     });
 
+    console.log(`[NotificationAdapter] 通知已调度，ID: ${notificationId}`);
     return notificationId;
   }
 
@@ -337,7 +369,7 @@ export function initializeMCPTools(): ToolRegistry {
   // 注册网页搜索工具
   try {
     const webSearchTools = createWebSearchTools({
-      defaultEngine: "bing",
+      defaultEngine: "searxng",
       searxng: {
         baseUrl: "https://searsh.gdmu-stuorg.com/",
         language: "zh-CN",

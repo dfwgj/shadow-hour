@@ -159,26 +159,58 @@ export function createNotificationScheduleHandler(service: NotificationService):
     async execute(args: Record<string, unknown>, _context: ToolContext): Promise<ToolExecutionResult> {
       const params = args as unknown as NotificationScheduleParams
 
-      // 验证时间是否在未来
-      const scheduledTime = new Date(params.scheduledAt).getTime()
-      if (scheduledTime <= Date.now()) {
+      // 解析时间 - 处理多种格式
+      let scheduledDate: Date
+      const scheduledAt = params.scheduledAt
+
+      // 如果没有时区信息，当作本地时间处理
+      if (scheduledAt.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/)) {
+        // ISO 格式无时区，解析为本地时间
+        const [datePart, timePart] = scheduledAt.split('T')
+        const [year, month, day] = datePart.split('-').map(Number)
+        const [hour, minute, second = 0] = timePart.split(':').map(Number)
+        scheduledDate = new Date(year, month - 1, day, hour, minute, second)
+      } else {
+        scheduledDate = new Date(scheduledAt)
+      }
+
+      // 验证时间是否有效
+      if (isNaN(scheduledDate.getTime())) {
         return {
           success: false,
           content: '',
-          error: '调度时间必须是未来时间'
+          error: `无效的时间格式: ${scheduledAt}`
         }
       }
 
-      const notificationId = await service.schedule(params)
+      // 验证时间是否在未来
+      if (scheduledDate.getTime() <= Date.now()) {
+        return {
+          success: false,
+          content: '',
+          error: `调度时间必须是未来时间，收到: ${scheduledDate.toLocaleString()}`
+        }
+      }
 
-      return {
-        success: true,
-        content: JSON.stringify({
-          message: '通知已调度',
-          notificationId,
-          scheduledAt: params.scheduledAt,
-          title: params.title
-        }, null, 2)
+      try {
+        const notificationId = await service.schedule(params)
+
+        return {
+          success: true,
+          content: JSON.stringify({
+            message: '通知已调度',
+            notificationId,
+            scheduledAt: params.scheduledAt,
+            parsedTime: scheduledDate.toLocaleString(),
+            title: params.title
+          }, null, 2)
+        }
+      } catch (error: any) {
+        return {
+          success: false,
+          content: '',
+          error: error.message || '调度通知失败'
+        }
       }
     },
     validate(args: Record<string, unknown>) {
