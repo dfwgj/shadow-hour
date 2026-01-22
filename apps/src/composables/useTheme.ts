@@ -74,7 +74,7 @@ function isBeijingMidnight(): boolean {
   // 获取 UTC 时间，加 8 小时得到北京时间
   const utcHours = now.getUTCHours();
   const beijingHours = (utcHours + 8) % 24;
-  return beijingHours >= 1 && beijingHours < 2;
+  return beijingHours >= 0 && beijingHours < 1;
 }
 
 // 获取单个 CSS 变量值

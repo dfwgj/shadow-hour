@@ -108,7 +108,7 @@
 
         <!-- 输入区域 -->
         <StackLayout v-if="hasApiKey" row="3" class="bg-theme-secondary p-3">
-          <GridLayout columns="*, auto" class="bg-theme-card rounded-2xl px-4 border border-[var(--primary)]">
+          <GridLayout columns="*, auto" class="bg-theme-card rounded-2xl px-4 border-2 border-[var(--primary)]">
             <TextView
               col="0"
               v-model="inputText"
@@ -128,7 +128,7 @@
               textAlignment="center"
               verticalAlignment="middle"
               :class="[
-                'text-2xl  bg-theme-card rounded-full  border border-[var(--primary)]',
+                'text-2xl  bg-theme-card rounded-full  border-2 border-[var(--primary)]',
                 canSend ? 'text-theme-brand' : 'text-theme-tertiary'
               ]"
               @tap="isProcessing ? abort() : sendMessage()"

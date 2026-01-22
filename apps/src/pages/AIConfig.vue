@@ -33,7 +33,7 @@
                 secure="true"
                 class="bg-theme-tertiary rounded-lg p-2"
               />
-              <Label text="前往获取 API Key →" class="text-theme-info text-sm mt-2" @tap="openApiKeyPage" />
+              <Label text="前往获取 API Key →" class="text-sm mt-2"  :color="getColor('primary')" @tap="openApiKeyPage" />
             </StackLayout>
 
             <!-- 模型选择 -->
@@ -52,8 +52,9 @@
                   :text="m.name"
                   :class="[
                     'px-3 py-2 m-1 rounded-lg text-xs',
-                    model === m.id ? 'bg-theme-brand text-theme-inverse' : 'bg-theme-card text-theme-secondary'
+                    model === m.id ? 'text-theme-inverse' : ' text-theme-secondary'
                   ]"
+                  :backgroundColor="model === m.id ? getColor('primary') : getColor('bgPrimary')"
                   @tap="selectModel(m.id)"
                 />
               </WrapLayout>
@@ -75,7 +76,8 @@
             <!-- 保存按钮 -->
             <Label
               text="保存配置"
-              class="bg-theme-brand text-theme-inverse text-center py-3 rounded-xl font-medium"
+              class=" text-theme-inverse text-center py-3 rounded-xl font-medium"
+              :backgroundColor="getColor('primary')"
               @tap="saveConfig"
             />
           </StackLayout>
@@ -121,8 +123,9 @@
               :text="checkingUpdate ? '检查中...' : '检查更新'"
               :class="[
                 'text-center py-3 rounded-xl font-medium',
-                checkingUpdate ? 'bg-theme-tertiary text-theme-secondary' : 'bg-theme-brand text-theme-inverse'
+                checkingUpdate ? ' text-theme-secondary' : 'text-theme-inverse'
               ]"
+              :backgroundColor="checkingUpdate ? getColor('bgSecondary') : getColor('primary')"
               @tap="checkUpdate"
             />
           </StackLayout>
@@ -141,7 +144,8 @@ import { Screen, Application, Utils, Dialogs } from "@nativescript/core";
 import { Toast } from "@xierfloat-monorepo/mobile-ui";
 import { ApplicationSettings } from "@nativescript/core";
 import { AppConfig } from "../config/app.config";
-
+import { useTheme } from "../composables/useTheme";
+const {  getColor } = useTheme();
 // 硅基流动配置常量
 const SILICONFLOW_API_URL = "https://api.siliconflow.cn/v1/messages";
 const DEFAULT_MODEL = "zai-org/GLM-4.6V"; // 免费模型
