@@ -20,7 +20,7 @@
     "precommit": "lint-staged",
     "icons": "node ./scripts/generate-icons.cjs",
     "backgrounds": "node ./scripts/generate-backgrounds.cjs",
-    "publish:utils": "node ./scripts/publish.js"
+    "release": "node ./scripts/release.js"
   },
   "config": {
     "commitizen": {

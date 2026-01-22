@@ -109,6 +109,23 @@
               </StackLayout>
             </GridLayout>
           </StackLayout>
+
+          <!-- 版本信息 -->
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <Label text="关于" class="text-lg font-bold text-theme-primary mb-4" />
+            <GridLayout columns="*, auto" class="mb-3">
+              <Label col="0" text="当前版本" class="text-theme-primary" />
+              <Label col="1" :text="'v' + currentVersion" class="text-theme-secondary" />
+            </GridLayout>
+            <Label
+              :text="checkingUpdate ? '检查中...' : '检查更新'"
+              :class="[
+                'text-center py-3 rounded-xl font-medium',
+                checkingUpdate ? 'bg-theme-tertiary text-theme-secondary' : 'bg-theme-brand text-theme-inverse'
+              ]"
+              @tap="checkUpdate"
+            />
+          </StackLayout>
         </StackLayout>
       </ScrollView>
 
@@ -120,13 +137,17 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, $navigateBack } from "nativescript-vue";
-import { Screen, Application, Utils } from "@nativescript/core";
+import { Screen, Application, Utils, Dialogs } from "@nativescript/core";
 import { Toast } from "@xierfloat-monorepo/mobile-ui";
 import { ApplicationSettings } from "@nativescript/core";
+import { AppConfig } from "../config/app.config";
 
 // 硅基流动配置常量
 const SILICONFLOW_API_URL = "https://api.siliconflow.cn/v1/messages";
 const DEFAULT_MODEL = "zai-org/GLM-4.6V"; // 免费模型
+
+// 版本信息 (从环境变量读取)
+const currentVersion = AppConfig.version;
 
 // 状态栏高度
 const statusBarHeight = ref(24);
@@ -136,6 +157,7 @@ const bottomSafeArea = ref(0);
 const apiKey = ref("");
 const model = ref(DEFAULT_MODEL);
 const testStatus = ref("");
+const checkingUpdate = ref(false);
 
 const recommendedModels = [
   { id: "zai-org/GLM-4.6V", name: "GLM-4.6" },
@@ -183,6 +205,9 @@ onMounted(() => {
 
   // 加载已保存的配置
   loadSavedConfig();
+
+  // 自动检查更新
+  checkUpdate(true);
 });
 
 // 返回
@@ -289,6 +314,78 @@ function saveConfig() {
   } catch (error) {
     Toast.error("保存失败");
   }
+}
+
+// 比较版本号 (返回: 1 = v1 > v2, -1 = v1 < v2, 0 = 相等)
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.replace(/^v/, "").split(".").map(Number);
+  const parts2 = v2.replace(/^v/, "").split(".").map(Number);
+
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const p1 = parts1[i] || 0;
+    const p2 = parts2[i] || 0;
+    if (p1 > p2) return 1;
+    if (p1 < p2) return -1;
+  }
+  return 0;
+}
+
+// 检查更新
+async function checkUpdate(silent = false) {
+  if (checkingUpdate.value) return;
+
+  checkingUpdate.value = true;
+
+  try {
+    const response = await fetch(AppConfig.updateCheckUrl, {
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "ShadowHour-App"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const latestVersion = data.tag_name || data.version || "";
+    const downloadUrl = data.html_url || data.assets?.[0]?.browser_download_url || AppConfig.downloadUrl;
+    const releaseNotes = data.body || "";
+
+    // 比较版本
+    if (latestVersion && compareVersions(latestVersion, currentVersion) > 0) {
+      // 有新版本
+      showUpdateDialog(latestVersion, releaseNotes, downloadUrl);
+    } else if (!silent) {
+      Toast.success("已是最新版本");
+    }
+  } catch (error: any) {
+    console.error("[AIConfig] 检查更新失败:", error);
+    if (!silent) {
+      Toast.error("检查更新失败，请稍后重试");
+    }
+  } finally {
+    checkingUpdate.value = false;
+  }
+}
+
+// 显示更新弹窗
+function showUpdateDialog(version: string, notes: string, downloadUrl: string) {
+  const message = notes
+    ? `发现新版本 ${version}\n\n更新内容：\n${notes.slice(0, 200)}${notes.length > 200 ? "..." : ""}`
+    : `发现新版本 ${version}，是否前往下载？`;
+
+  Dialogs.confirm({
+    title: "发现新版本",
+    message: message,
+    okButtonText: "立即更新",
+    cancelButtonText: "稍后再说"
+  }).then((result: boolean) => {
+    if (result) {
+      Utils.openUrl(downloadUrl);
+    }
+  });
 }
 </script>
 

@@ -1,5 +1,5 @@
 {
-  "name": "shadowHour",
+  "name": "shadow-hour",
   "main": "src/app.ts",
   "version": "1.0.0",
   "private": true,

@@ -1,0 +1,95 @@
+name: Build and Release Android
+
+on:
+  push:
+    tags:
+      - 'v*' # 当推送 v 开头的 tag 时触发
+
+env:
+  NODE_VERSION: '20'
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Update app version in .env
+        run: |
+          echo "APP_VERSION=${{ steps.version.outputs.VERSION }}" > apps/.env
+          echo "UPDATE_CHECK_URL=${{ secrets.UPDATE_CHECK_URL }}" >> apps/.env
+          echo "DOWNLOAD_URL=${{ secrets.DOWNLOAD_URL }}" >> apps/.env
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > apps/keystore/release.keystore
+
+      - name: Build Release APK
+        working-directory: apps
+        run: |
+          npx ns build android --release \
+            --key-store-path ./keystore/release.keystore \
+            --key-store-password ${{ secrets.KEYSTORE_PASSWORD }} \
+            --key-store-alias ${{ secrets.KEYSTORE_ALIAS }} \
+            --key-store-alias-password ${{ secrets.KEYSTORE_ALIAS_PASSWORD }}
+
+      - name: Rename APK
+        run: |
+          mv apps/platforms/android/app/build/outputs/apk/release/shadowHour-*-release.apk \
+             shadowHour-v${{ steps.version.outputs.VERSION }}.apk
+
+      - name: Upload to your server
+        run: |
+          curl -X POST "${{ secrets.UPLOAD_SERVER_URL }}/upload" \
+            -H "Authorization: Bearer ${{ secrets.UPLOAD_SERVER_TOKEN }}" \
+            -F "file=@shadowHour-v${{ steps.version.outputs.VERSION }}.apk" \
+            -F "version=${{ steps.version.outputs.VERSION }}"
+
+      - name: Update version.json on server
+        run: |
+          curl -X POST "${{ secrets.UPLOAD_SERVER_URL }}/version" \
+            -H "Authorization: Bearer ${{ secrets.UPLOAD_SERVER_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "tag_name": "v${{ steps.version.outputs.VERSION }}",
+              "version": "${{ steps.version.outputs.VERSION }}",
+              "html_url": "${{ secrets.DOWNLOAD_URL }}/shadowHour-v${{ steps.version.outputs.VERSION }}.apk",
+              "body": "Release v${{ steps.version.outputs.VERSION }}"
+            }'
+
+      - name: Create GitHub Release (optional)
+        uses: softprops/action-gh-release@v1
+        with:
+          files: shadowHour-v${{ steps.version.outputs.VERSION }}.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
