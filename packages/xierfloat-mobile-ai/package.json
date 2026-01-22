@@ -19,7 +19,9 @@
     "./composables": "./src/composables/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.vue",
+    "clean": "rm -rf dist node_modules/.cache"
   },
   "dependencies": {
     "@xierfloat-monorepo/http-stream": "workspace:*",

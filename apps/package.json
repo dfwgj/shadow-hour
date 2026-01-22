@@ -8,6 +8,8 @@
     "build": "ns build android",
     "build:release": "ns build android --release --key-store-path ./keystore/release.keystore --key-store-password shadowhour --key-store-alias shadowhour --key-store-alias-password shadowhour",
     "clean": "ns clean",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.vue",
     "console": "C:\\Users\\DF\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe logcat -s JS:*"
   },
   "dependencies": {

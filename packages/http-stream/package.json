@@ -14,7 +14,9 @@
     "./src/workers/*": "./src/workers/*.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist node_modules/.cache"
   },
   "peerDependencies": {
     "@nativescript/core": ">=8.0.0"

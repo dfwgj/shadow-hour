@@ -34,6 +34,9 @@ coverage/
 *.cache
 *.tmp
 
+# Turbo
+.turbo/
+
 # Git
 .git/
 
