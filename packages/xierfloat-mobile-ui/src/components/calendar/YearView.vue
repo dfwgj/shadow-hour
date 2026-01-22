@@ -191,7 +191,6 @@ defineExpose({
             class="text-sm font-semibold"
             :style="{ color: checkIsCurrentMonth(monthData.month) ? props.color : '#1f2937' }"
           />
-
           <!-- 星期标题 -->
           <GridLayout columns="*, *, *, *, *, *, *" class="mb-1">
             <Label
@@ -202,7 +201,6 @@ defineExpose({
               class="text-xs text-gray-500 text-center"
             />
           </GridLayout>
-
           <!-- 日期网格 -->
           <WrapLayout orientation="horizontal">
             <Label

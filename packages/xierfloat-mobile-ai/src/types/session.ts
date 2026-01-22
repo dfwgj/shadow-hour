@@ -81,10 +81,10 @@ export interface SessionContext {
 
 /** 创建会话参数 */
 export interface CreateSessionParams {
-  title?: string
-  systemPrompt?: string
-  configId?: string
-  tags?: string[]
+  title?: string | undefined
+  systemPrompt?: string | undefined
+  configId?: string | undefined
+  tags?: string[] | undefined
 }
 
 /** 更新会话参数 */

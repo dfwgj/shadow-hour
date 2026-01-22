@@ -133,6 +133,7 @@
               :first-day-of-week="firstDayOfWeek"
               :events="weekEvents"
               :hour-height="40"
+              :color="getColor('primary')"
               @event-tap="onEventTap"
               @cell-tap="onCellTap"
               @multi-event="onMultiEvent"

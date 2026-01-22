@@ -6,7 +6,6 @@
       <GridLayout row="0" col="0" rows="auto, auto, *, auto, auto">
         <!-- 状态栏占位 -->
         <StackLayout row="0" :height="statusBarHeight" class="bg-theme-card" />
-
         <!-- 头部 -->
         <GridLayout row="1" columns="auto, *, auto, auto, auto" class="bg-theme-card p-3 border-b border-theme-light">
           <Label col="0" text="←" class="text-2xl text-theme-secondary p-2" @tap="goBack" />

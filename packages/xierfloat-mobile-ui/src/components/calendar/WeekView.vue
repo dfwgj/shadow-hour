@@ -176,7 +176,7 @@ defineExpose({
 
     <!-- 日期网格（左侧周数 + 7列日期） -->
     <StackLayout class="px-2">
-      <GridLayout v-for="week in weekGrid" :key="week.weekNumber" columns="24, *, *, *, *, *, *, *" class="h-14 mb-2">
+      <GridLayout v-for="week in weekGrid" :key="week.weekNumber" columns="24, *, *, *, *, *, *, *" class=" mb-2">
         <!-- 左侧周数 -->
         <StackLayout col="0" class="border-r border-gray-400" verticalAlignment="center">
           <Label :text="week.weekNumber.toString()" class="text-xs text-gray-400 text-center" />
@@ -188,7 +188,7 @@ defineExpose({
           v-for="(cell, dayIndex) in week.days"
           :key="dayIndex"
           :col="dayIndex + 1"
-          :class="['items-center justify-center rounded-2xl']"
+          :class="['items-center justify-center rounded-xl']"
           :style="{
             backgroundColor: cell.isToday ? props.color : '',
             borderWidth: cell.isSelected ? 1 : 0,

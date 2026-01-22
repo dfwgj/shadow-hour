@@ -199,12 +199,12 @@ defineExpose({
 
     <!-- 日期网格 -->
     <StackLayout class="px-4">
-      <GridLayout v-for="week in displayWeeks" :key="week.weekNumber" columns="*, *, *, *, *, *, *" class="h-14 mb-2">
+      <GridLayout v-for="week in displayWeeks" :key="week.weekNumber" columns="*, *, *, *, *, *, *" class=" mb-2">
         <StackLayout
           v-for="(cell, dayIndex) in week.days"
           :key="dayIndex"
           :col="dayIndex"
-          :class="['items-center justify-center rounded-2xl']"
+          :class="['items-center justify-center rounded-xl']"
           :style="{
             backgroundColor: cell.isToday ? props.color : '',
             borderWidth: cell.isSelected ? 1 : 0,
