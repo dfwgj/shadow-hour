@@ -17,13 +17,28 @@
 
 ---
 
+## 灵感来源
+
+> *"在影时间中，时间静止，只有觉醒者才能行动。"*
+
+本项目灵感来源于 ATLUS 经典 JRPG 游戏《**女神异闻录 (Persona)**》系列：
+
+- **影时 (Shadow Hour)** - 致敬 P3 中的「影时间」概念，寓意在忙碌生活中找到属于自己的时间
+- **时间管理系统** - 借鉴 Persona 系列标志性的日程规划与社群经营玩法
+- **AI 伙伴** - 如同游戏中的 Persona，AI 助手将成为你日程管理的得力搭档
+
+*本项目为粉丝致敬作品，与 ATLUS 官方无关。*
+
+---
+
 ## 核心特性
 
 ### AI 智能助手
 
-- 支持多 LLM 提供商（OpenAI、Claude、DeepSeek、通义千问、SiliconFlow 等）
+- 支持SiliconFlow提供商
 - 流式响应，实时对话体验
 - MCP 协议工具调用，AI 可直接操作日历和通知
+- SKILL协议轻量化实现，按需加载技能
 
 ### 日程管理
 
@@ -38,7 +53,7 @@
 - **模块化设计**：核心能力抽离为独立包
   - `nativeScript-ai` - LLM 对话引擎、上下文管理、技能系统
   - `nativeScript-http-stream` - 原生 HTTP 流式请求
-  - `nativeScript-ui` - 通用 UI 组件库
+  - `nativeScript-ui` - 日历通用 UI 组件库
 
 ### 跨平台
 
@@ -95,26 +110,19 @@ cd apps && ns build android --release
 
 ## 配置说明
 
-在应用内 **AI 设置** 页面配置 LLM 服务商：
-
-| 服务商 | 模型示例 | 说明 |
-|--------|----------|------|
-| OpenAI | gpt-4o, gpt-4o-mini | 需要 API Key |
-| Claude | claude-3-5-sonnet | 需要 API Key |
-| DeepSeek | deepseek-chat | 国内可用 |
-| SiliconFlow | Qwen/Qwen2.5-7B-Instruct | 国内可用，支持多模型 |
+在应用内 **AI 设置** 页面配置SiliconFlow密钥
 
 ## 技术栈
 
-| 类别 | 技术 |
-|------|------|
-| 框架 | NativeScript 8 + Vue 3 |
-| 语言 | TypeScript 5 |
-| 构建 | Turborepo + Vite |
-| 包管理 | pnpm workspace |
-| 样式 | TailwindCSS |
-| 存储 | SQLite + ApplicationSettings |
-| AI | OpenAI API / Anthropic API 兼容 |
+| 类别   | 技术                            |
+| ------ | ------------------------------- |
+| 框架   | NativeScript 8 + Vue 3          |
+| 语言   | TypeScript 5                    |
+| 构建   | Turborepo + Vite                |
+| 包管理 | pnpm workspace                  |
+| 样式   | TailwindCSS                     |
+| 存储   | SQLite + ApplicationSettings    |
+| AI     | OpenAI API / Anthropic API 兼容 |
 
 ## License
 
