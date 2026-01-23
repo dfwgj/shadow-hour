@@ -1,7 +1,7 @@
 /**
  * RFC5545 iCalendar 类型定义
  * @see https://datatracker.ietf.org/doc/html/rfc5545
- * @author xierfloat
+ * @author DF蓝梦/xierfloat
  * @date 2025-11-29
  */
 

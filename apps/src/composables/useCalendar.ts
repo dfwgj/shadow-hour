@@ -1,6 +1,8 @@
 /**
  * 日历核心组合式函数
  * 管理日历状态：当前日期、选中日期、视图类型等
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-11-30
  */
 
 import { ref, computed } from "nativescript-vue";
@@ -24,7 +26,7 @@ import {
   getEventsByDateRange
 } from "../services/database/index";
 
-// 全局状态（单例模式）
+// 全局状态
 const currentDate = ref(new Date()); // 当前显示的日期（用于导航）
 const selectedDate = ref(new Date()); // 用户选中的日期
 const viewType = ref<CalendarViewType>("month");
@@ -39,17 +41,14 @@ const isInitialized = ref(false); // 数据库是否已初始化
  */
 export function useCalendar() {
   // ===== 计算属性 =====
-
   // 月份标题
   const monthTitle = computed(() => getMonthName(currentDate.value));
-
   // 周标题（周视图用）
   const weekTitle = computed(() => {
     const start = getWeekStart(currentDate.value, firstDayOfWeek.value);
     const end = getWeekEnd(currentDate.value, firstDayOfWeek.value);
     const startMonth = start.getMonth() + 1;
     const endMonth = end.getMonth() + 1;
-
     if (startMonth === endMonth) {
       return `${start.getFullYear()}年${startMonth}月 第${getWeekNumber(currentDate.value)}周`;
     }

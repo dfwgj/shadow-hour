@@ -14,6 +14,7 @@ export type {
 
 export { OpenAIAdapter, createOpenAIAdapter } from './OpenAIAdapter'
 export { AnthropicAdapter, createAnthropicAdapter } from './AnthropicAdapter'
+export { SiliconFlowAdapter, createSiliconFlowAdapter } from './SiliconFlowAdapter'
 export {
   getAdapterRegistry,
   createLLMAdapter,

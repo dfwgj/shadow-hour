@@ -1,154 +1,21 @@
-<template>
-  <Page actionBarHidden="true">
-    <GridLayout rows="auto, auto, *, auto">
-      <!-- 状态栏占位 -->
-      <StackLayout row="0" :height="statusBarHeight" class="bg-theme-card" />
-
-      <!-- 头部 -->
-      <GridLayout row="1" columns="auto, *, auto" class="bg-theme-card p-3 border-b border-theme-light">
-        <Label col="0" text="←" class="text-2xl text-theme-secondary p-2" @tap="goBack" />
-        <Label col="1" text="AI 配置" class="text-lg font-bold text-theme-primary text-center" />
-        <Label col="2" text="" class="text-xl p-2" />
-      </GridLayout>
-
-      <!-- 配置内容 -->
-      <ScrollView row="2" class="bg-theme-secondary overflow-auto">
-        <StackLayout class="p-4">
-          <!-- 硅基流动配置卡片 -->
-          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
-            <!-- 平台标识 -->
-            <GridLayout columns="auto, *" class="mb-4">
-              <StackLayout col="1" class="ml-3">
-                <Label text="硅基流动" class="text-lg font-bold text-theme-primary" />
-                <Label text="SiliconFlow AI Platform" class="text-sm text-theme-secondary" />
-              </StackLayout>
-            </GridLayout>
-
-            <!-- API Key -->
-            <StackLayout class="mb-4">
-              <Label text="API Key" class="text-theme-secondary mb-2" />
-              <TextField
-                v-model="apiKey"
-                hint="输入你的硅基流动 API Key"
-                secure="true"
-                class="bg-theme-tertiary rounded-lg p-2"
-              />
-              <Label text="前往获取 API Key →" class="text-sm mt-2"  :color="getColor('primary')" @tap="openApiKeyPage" />
-            </StackLayout>
-
-            <!-- 模型选择 -->
-            <StackLayout class="mb-4">
-              <Label text="模型" class="text-theme-secondary mb-2" />
-              <TextField v-model="model" hint="zai-org/GLM-4.6V" class="bg-theme-tertiary rounded-lg p-2" />
-            </StackLayout>
-
-            <!-- 推荐模型 -->
-            <StackLayout class="mb-4">
-              <Label text="推荐模型" class="text-theme-secondary mb-2" />
-              <WrapLayout class="bg-theme-secondary rounded-xl p-2">
-                <Label
-                  v-for="m in recommendedModels"
-                  :key="m.id"
-                  :text="m.name"
-                  :class="[
-                    'px-3 py-2 m-1 rounded-lg text-xs',
-                    model === m.id ? 'text-theme-inverse' : ' text-theme-secondary'
-                  ]"
-                  :backgroundColor="model === m.id ? getColor('primary') : getColor('bgPrimary')"
-                  @tap="selectModel(m.id)"
-                />
-              </WrapLayout>
-            </StackLayout>
-
-            <!-- 测试连接 -->
-            <Label
-              :text="testStatus || '测试连接'"
-              :class="[
-                'text-center py-3 rounded-xl font-medium mb-2',
-                testStatus === '连接成功'
-                  ? 'bg-theme-success text-theme-inverse'
-                  : testStatus === '连接失败'
-                    ? 'bg-theme-error text-theme-inverse'
-                    : 'bg-theme-tertiary text-theme-secondary'
-              ]"
-              @tap="testConnection"
-            />
-            <!-- 保存按钮 -->
-            <Label
-              text="保存配置"
-              class=" text-theme-inverse text-center py-3 rounded-xl font-medium"
-              :backgroundColor="getColor('primary')"
-              @tap="saveConfig"
-            />
-          </StackLayout>
-
-          <!-- 功能说明 -->
-          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
-            <Label text="支持的功能" class="text-lg font-bold text-theme-primary mb-4" />
-
-            <StackLayout v-for="feature in features" :key="feature.title" class="mb-3">
-              <GridLayout columns="auto, *">
-                <Label col="0" :text="feature.icon" class="text-xl mr-3" />
-                <StackLayout col="1">
-                  <Label :text="feature.title" class="text-theme-primary text-lg" />
-                  <Label :text="feature.desc" class="text-sm text-theme-secondary" textWrap="true" />
-                </StackLayout>
-              </GridLayout>
-            </StackLayout>
-          </StackLayout>
-
-          <!-- 隐私说明 -->
-          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
-            <Label text="隐私保护" class="text-lg font-bold text-theme-primary mb-4" />
-            <GridLayout columns="auto, *">
-              <StackLayout col="1">
-                <Label
-                  text="您的 API Key 仅存储在本地设备，不会上传到任何服务器。所有对话数据也仅保存在本地。"
-                  class="text-sm text-theme-primary"
-                  textWrap="true"
-                  lineHeight="2"
-                />
-              </StackLayout>
-            </GridLayout>
-          </StackLayout>
-
-          <!-- 版本信息 -->
-          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
-            <Label text="关于" class="text-lg font-bold text-theme-primary mb-4" />
-            <GridLayout columns="*, auto" class="mb-3">
-              <Label col="0" text="当前版本" class="text-theme-primary" />
-              <Label col="1" :text="'v' + currentVersion" class="text-theme-secondary" />
-            </GridLayout>
-            <Label
-              :text="checkingUpdate ? '检查中...' : '检查更新'"
-              :class="[
-                'text-center py-3 rounded-xl font-medium',
-                checkingUpdate ? ' text-theme-secondary' : 'text-theme-inverse'
-              ]"
-              :backgroundColor="checkingUpdate ? getColor('bgSecondary') : getColor('primary')"
-              @tap="checkUpdate"
-            />
-          </StackLayout>
-        </StackLayout>
-      </ScrollView>
-
-      <!-- 底部安全区域 -->
-      <StackLayout row="3" :height="bottomSafeArea" class="bg-theme-secondary" />
-    </GridLayout>
-  </Page>
-</template>
-
 <script lang="ts" setup>
+/**
+ * 配置页面组件
+ * 管理模型选择、API Key 输入等、自动更新配置项
+ * 提供保存配置功能
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-12-25
+ */
 import { ref, onMounted, $navigateBack } from "nativescript-vue";
 import { Screen, Application, Utils, Dialogs } from "@nativescript/core";
-import { Toast } from "@xierfloat-monorepo/mobile-ui";
+import { Toast, ToastContainer } from "@xierfloat-monorepo/mobile-ui";
 import { ApplicationSettings } from "@nativescript/core";
 import { AppConfig } from "../config/app.config";
 import { useTheme } from "../composables/useTheme";
-const {  getColor } = useTheme();
+const { getColor } = useTheme();
 // 硅基流动配置常量
 const SILICONFLOW_API_URL = "https://api.siliconflow.cn/v1/messages";
-const DEFAULT_MODEL = "zai-org/GLM-4.6V"; // 免费模型
+const DEFAULT_MODEL = "moonshotai/Kimi-K2-Instruct-0905";
 
 // 版本信息 (从环境变量读取)
 const currentVersion = AppConfig.version;
@@ -164,10 +31,10 @@ const testStatus = ref("");
 const checkingUpdate = ref(false);
 
 const recommendedModels = [
+  { id: "moonshotai/Kimi-K2-Instruct-0905", name: "Kimi-K2" },
   { id: "zai-org/GLM-4.6V", name: "GLM-4.6" },
   { id: "Qwen/Qwen3-VL-32B-Thinking", name: "Qwen3-VL-32B" },
   { id: "MiniMaxAI/MiniMax-M2", name: "MiniMax-M2" },
-  { id: "moonshotai/Kimi-K2-Instruct-0905", name: "Kimi-K2" },
   { id: "deepseek-ai/DeepSeek-V3.2", name: "DeepSeek-V3.2" }
 ];
 
@@ -209,7 +76,6 @@ onMounted(() => {
 
   // 加载已保存的配置
   loadSavedConfig();
-
   // 自动检查更新
   checkUpdate(true);
 });
@@ -260,8 +126,7 @@ async function testConnection() {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey.value}`,
-        "Content-Type": "application/json",
-        "anthropic-version": "2023-06-01"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: model.value || DEFAULT_MODEL,
@@ -275,7 +140,7 @@ async function testConnection() {
 
     if (response.ok) {
       testStatus.value = "连接成功";
-      Toast.success("API Key 验证成功");
+      Toast.success("验证成功");
     } else {
       const errorText = await response.text();
       console.log("Error response:", errorText);
@@ -392,9 +257,155 @@ function showUpdateDialog(version: string, notes: string, downloadUrl: string) {
   });
 }
 </script>
+<template>
+  <Page actionBarHidden="true">
+    <GridLayout rows="*" columns="*">
+      <!-- 主内容 -->
+      <GridLayout row="0" col="0" rows="auto, auto, *, auto">
 
-<style scoped>
-.slider {
-  margin: 0 8;
-}
-</style>
+        <!-- 状态栏占位 -->
+        <StackLayout row="0" :height="statusBarHeight" class="bg-theme-card" />
+
+      <!-- 头部 -->
+      <GridLayout row="1" columns="auto, *, auto" class="bg-theme-card p-3 border-b border-theme-light">
+        <Label col="0" text="←" class="text-2xl text-theme-secondary p-2" @tap="goBack" />
+        <Label col="1" text="AI 配置" class="text-lg font-bold text-theme-primary text-center" />
+        <Label col="2" text="" class="text-xl p-2" />
+      </GridLayout>
+
+      <!-- 配置内容 -->
+      <ScrollView row="2" class="bg-theme-secondary overflow-auto">
+        <StackLayout class="p-4">
+          <!-- 硅基流动配置卡片 -->
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <!-- 平台标识 -->
+            <GridLayout columns="auto, *" class="mb-4">
+              <StackLayout col="1" class="ml-3">
+                <Label text="硅基流动" class="text-lg font-bold text-theme-primary" />
+                <Label text="SiliconFlow AI Platform" class="text-sm text-theme-secondary" />
+              </StackLayout>
+            </GridLayout>
+
+            <!-- API Key -->
+            <StackLayout class="mb-4">
+              <Label text="API Key" class="text-theme-secondary mb-2" />
+              <TextField
+                v-model="apiKey"
+                hint="输入你的硅基流动 API Key"
+                secure="true"
+                class="bg-theme-tertiary rounded-lg p-2"
+              />
+              <Label
+                text="前往获取 API Key →"
+                class="text-sm mt-2"
+                :color="getColor('primary')"
+                @tap="openApiKeyPage"
+              />
+            </StackLayout>
+
+            <!-- 模型选择 -->
+            <StackLayout class="mb-4">
+              <Label text="模型" class="text-theme-secondary mb-2" />
+              <TextField v-model="model" hint="zai-org/GLM-4.6V" class="bg-theme-tertiary rounded-lg p-2" />
+            </StackLayout>
+
+            <!-- 推荐模型 -->
+            <StackLayout class="mb-4">
+              <Label text="推荐模型" class="text-theme-secondary mb-2" />
+              <WrapLayout class="bg-theme-secondary rounded-xl p-2">
+                <Label
+                  v-for="m in recommendedModels"
+                  :key="m.id"
+                  :text="m.name"
+                  :class="[
+                    'px-3 py-2 m-1 rounded-lg text-xs',
+                    model === m.id ? 'text-theme-inverse' : ' text-theme-secondary'
+                  ]"
+                  :backgroundColor="model === m.id ? getColor('primary') : getColor('bgPrimary')"
+                  @tap="selectModel(m.id)"
+                />
+              </WrapLayout>
+            </StackLayout>
+
+            <!-- 测试连接 -->
+            <Label
+              :text="testStatus || '测试连接'"
+              :class="[
+                'text-center py-3 rounded-xl font-medium mb-2',
+                testStatus === '连接成功'
+                  ? 'bg-theme-success text-theme-inverse'
+                  : testStatus === '连接失败'
+                    ? 'bg-theme-error text-theme-inverse'
+                    : 'bg-theme-tertiary text-theme-secondary'
+              ]"
+              @tap="testConnection"
+            />
+            <!-- 保存按钮 -->
+            <Label
+              text="保存配置"
+              class="text-theme-inverse text-center py-3 rounded-xl font-medium"
+              :backgroundColor="getColor('primary')"
+              @tap="saveConfig"
+            />
+          </StackLayout>
+
+          <!-- 功能说明 -->
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <Label text="支持的功能" class="text-lg font-bold text-theme-primary mb-4" />
+
+            <StackLayout v-for="feature in features" :key="feature.title" class="mb-3">
+              <GridLayout columns="auto, *">
+                <Label col="0" :text="feature.icon" class="text-xl mr-3" />
+                <StackLayout col="1">
+                  <Label :text="feature.title" class="text-theme-primary text-lg" />
+                  <Label :text="feature.desc" class="text-sm text-theme-secondary" textWrap="true" />
+                </StackLayout>
+              </GridLayout>
+            </StackLayout>
+          </StackLayout>
+
+          <!-- 隐私说明 -->
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <Label text="隐私保护" class="text-lg font-bold text-theme-primary mb-4" />
+            <GridLayout columns="auto, *">
+              <StackLayout col="1">
+                <Label
+                  text="您的 API Key 仅存储在本地设备，不会上传到任何服务器。所有对话数据也仅保存在本地。"
+                  class="text-sm text-theme-primary"
+                  textWrap="true"
+                  lineHeight="2"
+                />
+              </StackLayout>
+            </GridLayout>
+          </StackLayout>
+
+          <!-- 版本信息 -->
+          <StackLayout class="bg-theme-card rounded-2xl p-4 mb-4">
+            <Label text="关于" class="text-lg font-bold text-theme-primary mb-4" />
+            <GridLayout columns="*, auto" class="mb-3">
+              <Label col="0" text="当前版本" class="text-theme-primary" />
+              <Label col="1" :text="'v' + currentVersion" class="text-theme-secondary" />
+            </GridLayout>
+            <Label
+              :text="checkingUpdate ? '检查中...' : '检查更新'"
+              :class="[
+                'text-center py-3 rounded-xl font-medium',
+                checkingUpdate ? ' text-theme-secondary' : 'text-theme-inverse'
+              ]"
+              :backgroundColor="checkingUpdate ? getColor('bgSecondary') : getColor('primary')"
+              @tap="checkUpdate"
+            />
+          </StackLayout>
+        </StackLayout>
+      </ScrollView>
+
+        <!-- 底部安全区域 -->
+        <StackLayout row="3" :height="bottomSafeArea" class="bg-theme-secondary" />
+      </GridLayout>
+
+      <!-- Toast 容器 (覆盖层) -->
+      <ToastContainer row="0" col="0" />
+    </GridLayout>
+  </Page>
+</template>
+<style scoped></style>

@@ -1,3 +1,11 @@
+/**
+ * 主题组合式函数
+ * 管理应用主题状态：颜色、模式等
+ * 提供主题相关功能：切换主题、获取颜色等
+ * 主要是为了游戏彩蛋，凌晨0点到1点切换到影时间主题
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-1-10
+ */
 import { ref, computed } from "nativescript-vue";
 import { Application } from "@nativescript/core";
 
@@ -122,7 +130,6 @@ function applyMidnightColors(): void {
 function getThemeColors() {
   const colors: Record<string, string> = {};
   const isMidnight = isBeijingMidnight();
-
   for (const [key, cssVar] of Object.entries(cssVarMap)) {
     // 北京时间 0:00-1:00 时 primary 系列颜色变为特殊颜色
     if (isMidnight && (key === "primary" || key === "primaryDark")) {
@@ -175,12 +182,11 @@ export function useTheme() {
   const initTheme = () => {
     // 立即应用一次
     applyMidnightColors();
-
     // 每分钟检查一次是否需要切换
     if (!midnightTimer) {
       midnightTimer = setInterval(() => {
         applyMidnightColors();
-      }, 60000); // 每分钟检查
+      }, 60000); // 每分钟检查一次
     }
   };
 

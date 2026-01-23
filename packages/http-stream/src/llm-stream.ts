@@ -1,6 +1,8 @@
 /**
  * LLM 流式响应处理
  * 提供便捷的 OpenAI 兼容 API 流式调用
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-12-10
  */
 
 import { streamRequest } from "./stream";

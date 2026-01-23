@@ -1,6 +1,8 @@
 /**
  * AI 对话历史持久化服务
- * @author xierfloat
+ * 自动更新对话历史配置
+ * @author  DF蓝梦/xierfloat
+ * @date 2025-12-15
  */
 
 import { ApplicationSettings } from "@nativescript/core";
@@ -44,7 +46,7 @@ const SESSION_PREFIX = "ai_chat_session_";
 class ChatHistoryService {
   private static instance: ChatHistoryService;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): ChatHistoryService {
     if (!ChatHistoryService.instance) {

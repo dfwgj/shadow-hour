@@ -1,7 +1,10 @@
 /**
  * 本地通知服务
  * 用于日程提醒推送
- * @author xierfloat
+ * 自动创建和管理本地通知
+ * @author DF蓝梦/xierfloat
+ * @author claude4.5-opus
+ * @date 2025-12-30
  */
 import { LocalNotifications } from "@nativescript/local-notifications";
 import { isAndroid, Device, Utils, Application } from "@nativescript/core";
@@ -27,7 +30,7 @@ export class NotificationService {
   private hasPermission: boolean = false;
   private channelCreated: boolean = false;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance(): NotificationService {
     if (!NotificationService.instance) {

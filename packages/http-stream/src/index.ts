@@ -1,7 +1,10 @@
 /**
  * @xierfloat-monorepo/http-stream
- *
- * NativeScript 流式 HTTP 客户端
+ * @version 1.0.0
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-1-10
+ * NativeScript 流式 HTTP 客户端，因为 NativeScript 不支持 Fetch API 的流式响应，
+ * 所以需要使用自定义的实现。
  * 支持 SSE (Server-Sent Events) 和分块传输
  *
  * @example

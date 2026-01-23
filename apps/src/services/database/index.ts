@@ -1,13 +1,15 @@
 /**
  * 数据库服务入口
- * @author xierfloat
+ * 自动更新数据库结构
+ * @author  DF蓝梦/xierfloat
+ * @date 2025-12-15
  */
 
 export { DatabaseManager } from "./core";
 export { EventRepository } from "./repositories/eventRepository";
 export { AlarmRepository } from "./repositories/alarmRepository";
 
-// 便捷导出
+// 导出
 import { DatabaseManager } from "./core";
 import { EventRepository } from "./repositories/eventRepository";
 

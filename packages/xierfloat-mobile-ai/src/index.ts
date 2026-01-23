@@ -59,6 +59,8 @@ export {
   createOpenAIAdapter,
   AnthropicAdapter,
   createAnthropicAdapter,
+  SiliconFlowAdapter,
+  createSiliconFlowAdapter,
   getAdapterRegistry,
   createLLMAdapter,
   registerAdapter

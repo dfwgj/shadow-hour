@@ -1,7 +1,10 @@
 <script lang="ts" setup>
 /**
  * 日程弹窗组件
- * 支持新增和查看/编辑模式
+ * 管理事件添加弹窗状态：标题、时间等
+ * 提供事件添加功能：用户输入标题、选择时间等
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-12-10
  */
 import { ref, computed, watch } from "nativescript-vue";
 import { useTheme } from "../composables/useTheme";
@@ -315,7 +318,6 @@ function onTimeChange(args: any) {
   tempPickerDate.value.setHours(picker.hour, picker.minute, 0, 0);
 }
 </script>
-
 <template>
   <GridLayout v-if="visible" rows="*" columns="*">
     <!-- 背景遮罩 (全屏) -->
@@ -409,7 +411,6 @@ function onTimeChange(args: any) {
     <GridLayout v-if="showPicker" row="0" col="0" rows="*, auto" columns="*">
       <!-- 选择器遮罩 -->
       <StackLayout row="0" rowSpan="2" col="0" class="bg-black opacity-30" @tap="closePicker" />
-
       <!-- 选择器内容 -->
       <StackLayout row="1" col="0" class="bg-theme-card rounded-t-2xl">
         <!-- 选择器标题栏 -->
@@ -432,7 +433,7 @@ function onTimeChange(args: any) {
           @dateChange="onDateChange"
         />
 
-        <!-- 时间选择器 (24小时制) -->
+        <!-- 时间选择器 -->
         <TimePicker
           v-if="showPicker === 'startTime' || showPicker === 'endTime'"
           :hour="tempPickerDate.getHours()"
@@ -448,7 +449,6 @@ function onTimeChange(args: any) {
     <GridLayout v-if="showReminderPicker" row="0" col="0" rows="*, auto" columns="*">
       <!-- 选择器遮罩 -->
       <StackLayout row="0" rowSpan="2" col="0" class="bg-black opacity-30" @tap="showReminderPicker = false" />
-
       <!-- 选择器内容 -->
       <StackLayout row="1" col="0" class="bg-theme-card rounded-t-2xl">
         <!-- 选择器标题栏 -->

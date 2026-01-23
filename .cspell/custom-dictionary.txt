@@ -7,7 +7,9 @@ Avenir
 dimen
 disturl
 esbuild
+exoplayer
 generatexlsx
+hdpi
 icns
 infobox
 infoboxes
@@ -17,12 +19,9 @@ kimera
 ldpi
 lintstagedrc
 mdpi
-hdpi
-xhdpi
-xxhdpi
-xxxhdpi
 moonshotai
 nativescript
+nstudio
 presearch
 QBRE
 safesearch
@@ -34,5 +33,8 @@ TIAN
 vite
 Wechat
 weixin
+xhdpi
 xierfloat
+xxhdpi
+xxxhdpi
 zindex

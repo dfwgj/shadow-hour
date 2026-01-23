@@ -125,15 +125,19 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
    */
   async function processLLMRequest(): Promise<void> {
     state.value = "thinking";
+    console.log("[useAgent] Processing LLM request...");
 
     // 获取上下文窗口
     const contextWindow = contextManager.getContextWindow(messages.value, systemPrompt);
+    console.log("[useAgent] Context messages count:", contextWindow.messages.length);
 
     // 获取工具定义
     const toolDefinitions = tools.length > 0 ? tools : getToolRegistry().getDefinitions();
+    console.log(`[useAgent] Using ${toolDefinitions.length} tools`);
 
     try {
       // 流式请求
+      console.log("[useAgent] Starting stream request...");
       streamController = adapter.stream(
         {
           messages: contextWindow.messages,
@@ -141,8 +145,12 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
           tools: toolDefinitions
         },
         streamEvent => {
+          // 调试: 原始流事件
+          console.log("[useAgent] Raw stream event:", streamEvent.type);
+
           // 通过状态机处理流事件
           const outputs = stateMachine.process(streamEvent);
+          console.log("[useAgent] State machine outputs:", outputs.length, outputs.map(o => o.type));
 
           // 发布所有输出事件
           for (const event of outputs) {
@@ -150,26 +158,39 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
 
             // 更新状态
             if (event.type === "state_change") {
+              console.log("[useAgent] State change:", event.data.previous, "->", event.data.current);
               state.value = event.data.current;
             }
 
             // 累积文本
             if (event.type === "text_delta") {
               streamingText.value += event.data.text;
+              console.log("[useAgent] Text delta, total length:", streamingText.value.length);
+            }
+
+            // 调试日志
+            if (event.type === "message_stop") {
+              console.log("[useAgent] Received message_stop event, stopReason:", event.data.stopReason);
             }
           }
         }
       );
+      console.log("[useAgent] Stream controller created");
 
       // 等待流完成
+      console.log("[useAgent] Waiting for stream to complete...");
       await waitForStreamComplete();
+      console.log("[useAgent] Stream completed, streamingText length:", streamingText.value.length);
 
       // 检查是否有工具调用
       const machineState = stateMachine.getState();
+      console.log("[useAgent] Machine state after stream:", machineState.current, "pendingToolCalls:", machineState.pendingToolCalls.length);
       if (machineState.pendingToolCalls.length > 0) {
+        console.log("[useAgent] Executing tool calls:", machineState.pendingToolCalls.map(tc => tc.name));
         await executeToolCalls(machineState.pendingToolCalls);
       } else {
         // 创建助手消息
+        console.log("[useAgent] No tool calls, finalizing message");
         finalizeAssistantMessage();
       }
     } catch (err) {
@@ -179,12 +200,19 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
   }
 
   /**
-   * 等待流完成
+   * 等待流完成（带超时）
    */
   function waitForStreamComplete(): Promise<void> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        unsubscribe();
+        console.warn("[useAgent] Stream timeout after 60s");
+        reject(new Error("Stream timeout"));
+      }, 60000);
+
       const unsubscribe = eventBus.on(event => {
         if (event.type === "message_stop" || event.type === "stream_error") {
+          clearTimeout(timeout);
           unsubscribe();
           resolve();
         }
@@ -198,6 +226,7 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
   async function executeToolCalls(
     pendingCalls: Array<{ id: string; name: string; arguments: Record<string, unknown> }>
   ): Promise<void> {
+    console.log("[useAgent] executeToolCalls started, calls:", pendingCalls.length);
     // 先保存助手消息 (包含工具调用)
     const assistantMessage: Message = {
       id: `msg_${Date.now()}`,
@@ -239,6 +268,7 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
       toolResults: results
     };
     messages.value = [...messages.value, toolMessage];
+    console.log("[useAgent] Tool results added to messages, total messages:", messages.value.length);
 
     // 重置状态机
     stateMachine.reset({
@@ -247,9 +277,11 @@ export function useAgent(options: AgentOptions): UseAgentReturn {
       pendingToolCalls: []
     });
     streamingText.value = "";
+    console.log("[useAgent] State machine reset, continuing LLM request...");
 
     // 继续 LLM 请求
     await processLLMRequest();
+    console.log("[useAgent] executeToolCalls completed");
   }
 
   /**

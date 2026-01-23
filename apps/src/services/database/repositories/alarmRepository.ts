@@ -1,7 +1,9 @@
 /**
  * 提醒仓库
  * 负责提醒的 CRUD 操作
- * @author xierfloat
+ * 自动更新提醒配置
+ * @author  DF蓝梦/xierfloat
+ * @date 2025-12-15
  */
 
 import type { VAlarm } from "../../../types/calendar";

@@ -6,6 +6,7 @@ import type { LLMConfig, LLMProvider } from '../types/config'
 import type { LLMAdapter, LLMAdapterFactory, LLMAdapterRegistry } from './types'
 import { createOpenAIAdapter } from './OpenAIAdapter'
 import { createAnthropicAdapter } from './AnthropicAdapter'
+import { createSiliconFlowAdapter } from './SiliconFlowAdapter'
 
 /**
  * 适配器注册表实现
@@ -71,6 +72,9 @@ class AdapterRegistryImpl implements LLMAdapterRegistry {
 
     // Anthropic
     this.factories.set('anthropic', createAnthropicAdapter)
+
+    // SiliconFlow (使用 Anthropic 格式 + Bearer Token)
+    this.factories.set('siliconflow', createSiliconFlowAdapter)
   }
 }
 

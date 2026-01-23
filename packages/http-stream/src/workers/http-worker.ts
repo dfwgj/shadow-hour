@@ -122,10 +122,11 @@ function executeRequest(req: WorkerRequest) {
 
     let line: string | null;
     while ((line = reader.readLine()) !== null) {
+      // readLine() 会去掉换行符，需要添加回来以便 SSE 解析
       send({
         id: req.id,
         type: "data",
-        chunk: String(line)
+        chunk: String(line) + "\n"
       });
     }
 

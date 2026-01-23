@@ -64,6 +64,21 @@ module.exports = env => {
           };
         });
     }
+
+    // 视频文件处理
+    config.module
+      .rule("videos")
+      .test(/\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/)
+      .type("asset/resource")
+      .set("generator", {
+        filename: "assets/videos/[name][ext]"
+      });
+
+    // Markdown/文本文件处理（作为原始字符串导入）
+    config.module
+      .rule("raw-text")
+      .test(/\.(md|txt)$/)
+      .type("asset/source");
   });
 
   return webpack.resolveConfig();

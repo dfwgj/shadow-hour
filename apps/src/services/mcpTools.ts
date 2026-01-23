@@ -1,7 +1,8 @@
 /**
  * MCP 工具服务
  * 初始化和管理 AI 可用的工具
- * @author xierfloat
+ * @author DF蓝梦/xierfloat
+ * @date 2025-12-30
  */
 
 import {

@@ -1,183 +1,9 @@
-<template>
-  <Frame>
-    <Page actionBarHidden="true">
-      <GridLayout rows="*" columns="*">
-        <!-- 主内容 -->
-        <GridLayout row="0" col="0" rows="auto, auto, auto, *, auto" class="bg-theme-secondary">
-          <!-- 状态栏占位 -->
-          <StackLayout row="0" :height="statusBarHeight" />
-          <!-- 头部标题 -->
-          <FlexboxLayout row="1" orientation="horizontal" justifyContent="space-between" class="bg-theme-card p-4">
-            <Label :text="headerTitle" class="text-2xl font-bold text-theme-primary" />
-            <Label
-              text="+"
-              @tap="openAddEvent"
-              :class="[getBrandClass('text'), 'text-4xl text-center']"
-              verticalAlignment="center"
-            />
-          </FlexboxLayout>
-
-          <!-- 视图切换器 -->
-          <GridLayout row="2" columns="*, *, *, *" class="bg-theme-secondary mx-4 rounded-3xl p-1 mt-2">
-            <Label
-              v-for="(tab, index) in viewTabs"
-              :key="tab.type"
-              :col="index"
-              :text="tab.label"
-              :class="[
-                'text-center py-2 text-sm text-theme-primary rounded-2xl ',
-                currentView === tab.type ? 'bg-theme-card font-medium ' : ''
-              ]"
-              @tap="switchView(tab.type)"
-            />
-          </GridLayout>
-
-          <!-- 主内容区 - 非周视图使用 ScrollView -->
-          <ScrollView row="3" v-if="currentView !== 'week'">
-            <StackLayout ref="contentRef">
-              <!-- 年视图 -->
-              <YearView
-                v-if="currentView === 'year'"
-                class="m-4"
-                ref="yearViewRef"
-                :year="currentDate.getFullYear()"
-                :selected-date="selectedDate"
-                :first-day-of-week="firstDayOfWeek"
-                :show-today="true"
-                :color="getColor('primary')"
-                @select="onDateSelect"
-                @month-tap="onYearMonthTap"
-                @swipe="onYearSwipe"
-              />
-              <!-- 月视图 -->
-              <StackLayout v-else-if="currentView === 'month'">
-                <MonthView
-                  class="m-4"
-                  ref="monthViewRef"
-                  :year="currentDate.getFullYear()"
-                  :month="currentDate.getMonth()"
-                  :selected-date="selectedDate"
-                  :first-day-of-week="firstDayOfWeek"
-                  :show-lunar="showLunar"
-                  :show-outside-days="true"
-                  :color="getColor('primary')"
-                  @select="onDateSelect"
-                  @swipe="onSwipe"
-                />
-                <!-- 今日信息 -->
-                <GridLayout columns="*, auto" class="py-3 px-4">
-                  <Label col="0" :text="todayInfo" class="text-sm text-theme-secondary" />
-                </GridLayout>
-                <!-- 事件卡片 -->
-                <StackLayout class="px-4" v-if="eventList.length > 0">
-                  <EventCard
-                    v-for="event in eventList"
-                    :key="event.uid"
-                    :title="event.summary"
-                    :start-time="event.dtStart"
-                    :end-time="event.dtEnd"
-                    :color="getColor('primary')"
-                    class="mb-3"
-                    @tap="onEventTap(event)"
-                    @delete="onDeleteEvent(event.uid)"
-                  />
-                </StackLayout>
-                <Label v-else text="暂无日程" class="text-base text-theme-secondary text-center p-12" />
-              </StackLayout>
-              <!-- 日程视图 -->
-              <StackLayout v-else-if="currentView === 'schedule'">
-                <!-- 今日信息 -->
-                <GridLayout columns="*, auto" class="py-3 px-4">
-                  <Label col="0" :text="todayScheduleInfo" class="text-sm text-theme-secondary" />
-                </GridLayout>
-                <!-- 事件卡片 -->
-                <StackLayout class="px-4" v-if="todayEvents.length > 0">
-                  <EventCard
-                    v-for="event in todayEvents"
-                    :key="event.uid"
-                    :title="event.summary"
-                    :start-time="event.dtStart"
-                    :end-time="event.dtEnd"
-                    :color="getColor('primary')"
-                    class="mb-3"
-                    @tap="onScheduleEventTap(event)"
-                    @delete="onDeleteTodayEvent(event.uid)"
-                  />
-                </StackLayout>
-                <Label v-else text="今日暂无日程" class="text-base text-theme-secondary text-center p-12" />
-              </StackLayout>
-            </StackLayout>
-          </ScrollView>
-
-          <!-- 周视图 - 单独布局，WeekView 固定 + WeekScheduleGrid 滚动 -->
-          <GridLayout v-else row="3" rows="auto, *">
-            <!-- WeekView 固定在顶部 -->
-            <WeekView
-              row="0"
-              class="m-4"
-              ref="weekViewRef"
-              :month="currentDate.getMonth()"
-              :selected-date="selectedDate"
-              :first-day-of-week="firstDayOfWeek"
-              :show-lunar="showLunar"
-              :show-outside-days="true"
-              :color="getColor('primary')"
-              @select="onDateSelect"
-              @swipe="onWeekSwipe"
-            />
-            <!-- WeekScheduleGrid 独立滚动 -->
-            <WeekScheduleGrid
-              row="1"
-              class="mx-4 bg-theme-card"
-              :selected-date="selectedDate"
-              :first-day-of-week="firstDayOfWeek"
-              :events="weekEvents"
-              :hour-height="40"
-              :color="getColor('primary')"
-              @event-tap="onEventTap"
-              @cell-tap="onCellTap"
-              @multi-event="onMultiEvent"
-            />
-          </GridLayout>
-
-          <!-- 底部导航 -->
-          <GridLayout row="4" columns="*, *" class="h-16 bg-theme-card border-t border-theme-light">
-            <StackLayout col="0" horizontalAlignment="center" verticalAlignment="center" @tap="switchNav('calendar')">
-              <Label
-                text="日程"
-                :class="[
-                  'text-md text-center',
-                  currentNav === 'calendar' ? getBrandClass('text') : 'text-theme-secondary'
-                ]"
-              />
-            </StackLayout>
-            <StackLayout col="1" horizontalAlignment="center" verticalAlignment="center" @tap="switchNav('today')">
-              <Label
-                text="智能安排"
-                :class="['text-md text-center', currentNav === 'today' ? 'text-theme-brand' : 'text-theme-secondary']"
-              />
-            </StackLayout>
-          </GridLayout>
-        </GridLayout>
-
-        <AddEventModal
-          row="0"
-          col="0"
-          :visible="showAddEventModal"
-          :selected-date="selectedDate"
-          :event="editingEvent"
-          @close="closeAddEventModal"
-          @submit="handleAddEventSubmit"
-          @update="handleUpdateEvent"
-        />
-
-        <!-- Toast 容器 -->
-        <ToastContainer row="0" col="0" />
-      </GridLayout>
-    </Page>
-  </Frame>
-</template>
 <script lang="ts" setup>
+/**
+ * 主页面，显示日历、日程、待办事项等
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-12-01
+ */
 import { ref, computed, onMounted, $navigateTo, onUnmounted } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
@@ -206,7 +32,6 @@ type ViewType = "year" | "month" | "week" | "schedule";
 const currentView = ref<ViewType>("month");
 // 周视图的事件（需要加载整周的事件）
 const weekEvents = ref<CalendarEvent[]>([]);
-
 // 日程视图的事件（只显示今天的事件）
 const todayEvents = ref<CalendarEvent[]>([]);
 
@@ -642,5 +467,183 @@ async function handleUpdateEvent(eventData: {
   }
 }
 </script>
+<template>
+  <Frame>
+    <Page actionBarHidden="true">
+      <GridLayout rows="*" columns="*">
+        <!-- 主内容 -->
+        <GridLayout row="0" col="0" rows="auto, auto, auto, *, auto" class="bg-theme-secondary">
+          <!-- 状态栏占位 -->
+          <StackLayout row="0" :height="statusBarHeight" />
+          <!-- 头部标题 -->
+          <FlexboxLayout row="1" orientation="horizontal" justifyContent="space-between" class="bg-theme-card p-4">
+            <Label :text="headerTitle" class="text-2xl font-bold text-theme-primary" />
+            <Label
+              text="+"
+              @tap="openAddEvent"
+              :class="[getBrandClass('text'), 'text-4xl text-center']"
+              verticalAlignment="center"
+            />
+          </FlexboxLayout>
 
+          <!-- 视图切换器 -->
+          <GridLayout row="2" columns="*, *, *, *" class="bg-theme-secondary mx-4 rounded-3xl p-1 mt-2">
+            <Label
+              v-for="(tab, index) in viewTabs"
+              :key="tab.type"
+              :col="index"
+              :text="tab.label"
+              :class="[
+                'text-center py-2 text-sm text-theme-primary rounded-2xl ',
+                currentView === tab.type ? 'bg-theme-card font-medium ' : ''
+              ]"
+              @tap="switchView(tab.type)"
+            />
+          </GridLayout>
+
+          <!-- 主内容区 - 非周视图使用 ScrollView -->
+          <ScrollView row="3" v-if="currentView !== 'week'">
+            <StackLayout ref="contentRef">
+              <!-- 年视图 -->
+              <YearView
+                v-if="currentView === 'year'"
+                class="m-4"
+                ref="yearViewRef"
+                :year="currentDate.getFullYear()"
+                :selected-date="selectedDate"
+                :first-day-of-week="firstDayOfWeek"
+                :show-today="true"
+                :color="getColor('primary')"
+                @select="onDateSelect"
+                @month-tap="onYearMonthTap"
+                @swipe="onYearSwipe"
+              />
+              <!-- 月视图 -->
+              <StackLayout v-else-if="currentView === 'month'">
+                <MonthView
+                  class="m-4"
+                  ref="monthViewRef"
+                  :year="currentDate.getFullYear()"
+                  :month="currentDate.getMonth()"
+                  :selected-date="selectedDate"
+                  :first-day-of-week="firstDayOfWeek"
+                  :show-lunar="showLunar"
+                  :show-outside-days="true"
+                  :color="getColor('primary')"
+                  @select="onDateSelect"
+                  @swipe="onSwipe"
+                />
+                <!-- 今日信息 -->
+                <GridLayout columns="*, auto" class="py-3 px-4">
+                  <Label col="0" :text="todayInfo" class="text-sm text-theme-secondary" />
+                </GridLayout>
+                <!-- 事件卡片 -->
+                <StackLayout class="px-4" v-if="eventList.length > 0">
+                  <EventCard
+                    v-for="event in eventList"
+                    :key="event.uid"
+                    :title="event.summary"
+                    :start-time="event.dtStart"
+                    :end-time="event.dtEnd"
+                    :color="getColor('primary')"
+                    class="mb-3"
+                    @tap="onEventTap(event)"
+                    @delete="onDeleteEvent(event.uid)"
+                  />
+                </StackLayout>
+                <Label v-else text="暂无日程" class="text-base text-theme-secondary text-center p-12" />
+              </StackLayout>
+              <!-- 日程视图 -->
+              <StackLayout v-else-if="currentView === 'schedule'">
+                <!-- 今日信息 -->
+                <GridLayout columns="*, auto" class="py-3 px-4">
+                  <Label col="0" :text="todayScheduleInfo" class="text-sm text-theme-secondary" />
+                </GridLayout>
+                <!-- 事件卡片 -->
+                <StackLayout class="px-4" v-if="todayEvents.length > 0">
+                  <EventCard
+                    v-for="event in todayEvents"
+                    :key="event.uid"
+                    :title="event.summary"
+                    :start-time="event.dtStart"
+                    :end-time="event.dtEnd"
+                    :color="getColor('primary')"
+                    class="mb-3"
+                    @tap="onScheduleEventTap(event)"
+                    @delete="onDeleteTodayEvent(event.uid)"
+                  />
+                </StackLayout>
+                <Label v-else text="今日暂无日程" class="text-base text-theme-secondary text-center p-12" />
+              </StackLayout>
+            </StackLayout>
+          </ScrollView>
+
+          <!-- 周视图 - 单独布局，WeekView 固定 + WeekScheduleGrid 滚动 -->
+          <GridLayout v-else row="3" rows="auto, *">
+            <!-- WeekView 固定在顶部 -->
+            <WeekView
+              row="0"
+              class="m-4"
+              ref="weekViewRef"
+              :month="currentDate.getMonth()"
+              :selected-date="selectedDate"
+              :first-day-of-week="firstDayOfWeek"
+              :show-lunar="showLunar"
+              :show-outside-days="true"
+              :color="getColor('primary')"
+              @select="onDateSelect"
+              @swipe="onWeekSwipe"
+            />
+            <!-- WeekScheduleGrid 独立滚动 -->
+            <WeekScheduleGrid
+              row="1"
+              class="mx-4 bg-theme-card"
+              :selected-date="selectedDate"
+              :first-day-of-week="firstDayOfWeek"
+              :events="weekEvents"
+              :hour-height="40"
+              :color="getColor('primary')"
+              @event-tap="onEventTap"
+              @cell-tap="onCellTap"
+              @multi-event="onMultiEvent"
+            />
+          </GridLayout>
+
+          <!-- 底部导航 -->
+          <GridLayout row="4" columns="*, *" class="h-16 bg-theme-card border-t border-theme-light">
+            <StackLayout col="0" horizontalAlignment="center" verticalAlignment="center" @tap="switchNav('calendar')">
+              <Label
+                text="日程"
+                :class="[
+                  'text-md text-center',
+                  currentNav === 'calendar' ? getBrandClass('text') : 'text-theme-secondary'
+                ]"
+              />
+            </StackLayout>
+            <StackLayout col="1" horizontalAlignment="center" verticalAlignment="center" @tap="switchNav('today')">
+              <Label
+                text="智能安排"
+                :class="['text-md text-center', currentNav === 'today' ? 'text-theme-brand' : 'text-theme-secondary']"
+              />
+            </StackLayout>
+          </GridLayout>
+        </GridLayout>
+
+        <AddEventModal
+          row="0"
+          col="0"
+          :visible="showAddEventModal"
+          :selected-date="selectedDate"
+          :event="editingEvent"
+          @close="closeAddEventModal"
+          @submit="handleAddEventSubmit"
+          @update="handleUpdateEvent"
+        />
+
+        <!-- Toast 容器 -->
+        <ToastContainer row="0" col="0" />
+      </GridLayout>
+    </Page>
+  </Frame>
+</template>
 <style scoped></style>

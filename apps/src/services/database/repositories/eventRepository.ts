@@ -1,7 +1,9 @@
 /**
  * 事件仓库
  * 负责事件的 CRUD 操作
- * @author xierfloat
+ * 自动更新事件配置
+ * @author  DF蓝梦/xierfloat
+ * @date 2025-12-15
  */
 
 import type { CalendarEvent, VAlarm } from "../../../types/calendar";
@@ -134,7 +136,6 @@ export class EventRepository implements IEventRepository {
     const db = this.getDb();
     const now = Date.now();
     const fields: string[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const values: any[] = [];
 
     if (updates.summary !== undefined) {

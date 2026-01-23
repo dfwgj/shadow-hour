@@ -121,6 +121,10 @@ export class OpenAIAdapter implements LLMAdapter {
     let messageId = "";
     let currentToolCallId = "";
     let buffer = "";
+    let totalChunks = 0;
+    let messageStopSent = false; // 防止重复发送 message_stop
+
+    console.log("[OpenAIAdapter] Starting stream request to:", `${this.config.baseUrl}/chat/completions`);
 
     const { controller, promise } = streamRequest(
       {
@@ -135,6 +139,8 @@ export class OpenAIAdapter implements LLMAdapter {
       },
       {
         onData: chunk => {
+          totalChunks++;
+          console.log(`[OpenAIAdapter] onData #${totalChunks}, chunk length:`, chunk.length);
           buffer += chunk;
           const lines = buffer.split("\n");
           buffer = lines.pop() || "";
@@ -143,11 +149,14 @@ export class OpenAIAdapter implements LLMAdapter {
             if (!line.startsWith("data: ")) continue;
             const data = line.slice(6).trim();
             if (data === "[DONE]") {
-              callback({
-                type: "message_stop",
-                timestamp: Date.now(),
-                data: { stopReason: "end_turn" }
-              });
+              if (!messageStopSent) {
+                messageStopSent = true;
+                callback({
+                  type: "message_stop",
+                  timestamp: Date.now(),
+                  data: { stopReason: "end_turn" }
+                });
+              }
               return;
             }
 
@@ -185,6 +194,7 @@ export class OpenAIAdapter implements LLMAdapter {
 
               // 文本增量
               if (choice.delta.content) {
+                console.log("[OpenAIAdapter] text_delta:", choice.delta.content.length, "chars");
                 callback({
                   type: "text_delta",
                   timestamp: Date.now(),
@@ -226,11 +236,14 @@ export class OpenAIAdapter implements LLMAdapter {
                     data: { toolCallId: currentToolCallId }
                   });
                 }
-                callback({
-                  type: "message_stop",
-                  timestamp: Date.now(),
-                  data: { stopReason: this.parseStopReason(choice.finish_reason) }
-                });
+                if (!messageStopSent) {
+                  messageStopSent = true;
+                  callback({
+                    type: "message_stop",
+                    timestamp: Date.now(),
+                    data: { stopReason: this.parseStopReason(choice.finish_reason) }
+                  });
+                }
               }
             } catch {
               // 忽略 JSON 解析错误
@@ -238,6 +251,7 @@ export class OpenAIAdapter implements LLMAdapter {
           }
         },
         onError: error => {
+          console.log("[OpenAIAdapter] onError:", error);
           callback({
             type: "stream_error",
             timestamp: Date.now(),
@@ -247,10 +261,38 @@ export class OpenAIAdapter implements LLMAdapter {
           });
         },
         onComplete: () => {
-          // 流完成
+          console.log("[OpenAIAdapter] onComplete, totalChunks:", totalChunks, "buffer:", buffer.length, "messageStopSent:", messageStopSent);
+          // 处理 buffer 中剩余的数据
+          if (buffer.trim()) {
+            const line = buffer.trim();
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6).trim();
+              if (data === "[DONE]" && !messageStopSent) {
+                messageStopSent = true;
+                callback({
+                  type: "message_stop",
+                  timestamp: Date.now(),
+                  data: { stopReason: "end_turn" }
+                });
+                return;
+              }
+            }
+          }
+          // 兜底：确保 message_stop 被发送
+          if (!messageStopSent) {
+            console.log("[OpenAIAdapter] Emitting fallback message_stop");
+            messageStopSent = true;
+            callback({
+              type: "message_stop",
+              timestamp: Date.now(),
+              data: { stopReason: "end_turn" }
+            });
+          }
         }
       }
     );
+
+    console.log("[OpenAIAdapter] Stream request initiated");
 
     // 保存 promise 用于错误处理
     promise.catch(() => {

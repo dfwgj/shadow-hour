@@ -1,5 +1,6 @@
 {
   "name": "shadow-hour",
+  "author": "DF蓝梦/xierfloat",
   "main": "src/app.ts",
   "version": "1.0.0",
   "private": true,

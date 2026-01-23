@@ -1,18 +1,17 @@
 /**
  * 数据库核心管理模块
  * 负责数据库的初始化、连接管理
- * @author xierfloat
+ * 自动更新数据库结构
+ * @author  DF蓝梦/xierfloat
+ * @date 2025-12-15
  */
 
 import { Application, path, knownFolders } from "@nativescript/core";
 
 // 数据库配置
 const DB_NAME = "calendar.db";
-
 // SQLite 模块和数据库实例
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let SQLite: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let db: any = null;
 
 /**
@@ -22,7 +21,7 @@ export class DatabaseManager {
   private static instance: DatabaseManager;
   private initialized = false;
 
-  private constructor() {}
+  private constructor() { }
 
   /**
    * 获取单例实例
@@ -37,7 +36,6 @@ export class DatabaseManager {
   /**
    * 获取数据库连接
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getConnection(): any {
     if (!db) {
       throw new Error("数据库未初始化，请先调用 init()");

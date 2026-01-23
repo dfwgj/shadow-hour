@@ -1,6 +1,8 @@
 /**
  * 全局主题配置
  * 支持日间/夜间模式切换
+ * @author: DF蓝梦/xierfloat
+ * @date 2025-12-10
  */
 
 import { ref, computed, watch } from "nativescript-vue";
