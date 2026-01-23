@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install NativeScript CLI
+        run: npm install -g nativescript
+
       - name: Update app version in .env
         run: |
           echo "APP_VERSION=${{ steps.version.outputs.VERSION }}" > apps/.env
