@@ -7,7 +7,7 @@
 import { ref, computed, onMounted, $navigateTo, onUnmounted } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
-import { solarToLunar } from "@xierfloat-monorepo/mobile-ui";
+import { solarToLunar } from "@xierfloat-monorepo/nativeScript-ui";
 import { notificationService } from "../services/notification";
 import {
   MonthView,
@@ -17,7 +17,7 @@ import {
   Toast,
   ToastContainer,
   WeekScheduleGrid
-} from "@xierfloat-monorepo/mobile-ui";
+} from "@xierfloat-monorepo/nativeScript-ui";
 import AddEventModal from "../components/AddEventModal.vue";
 import AIChat from "./AIChat.vue";
 import { CalendarEvent } from "~/types/calendar";
@@ -307,7 +307,7 @@ function onSwipe(direction: "left" | "right") {
   });
 }
 // 处理周视图左右滑动切换周数
-import { addDays } from "@xierfloat-monorepo/mobile-ui";
+import { addDays } from "@xierfloat-monorepo/nativeScript-ui";
 function onWeekSwipe(direction: "left" | "right") {
   weekViewRef.value?.playSlideAnimation(direction, async () => {
     const days = direction === "left" ? 7 : -7;

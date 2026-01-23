@@ -7,8 +7,8 @@
 import type { WeekDay } from '../types/calendar'
 
 // 从 packages 重新导出农历和通用日期工具
-export { solarToLunar, getLunarDayText, isSpecialDay } from '@xierfloat-monorepo/mobile-ui'
-export { isSameDay, isToday, isWeekend, addDays, getWeekDayNames } from '@xierfloat-monorepo/mobile-ui'
+export { solarToLunar, getLunarDayText, isSpecialDay } from '@xierfloat-monorepo/nativeScript-ui'
+export { isSameDay, isToday, isWeekend, addDays, getWeekDayNames } from '@xierfloat-monorepo/nativeScript-ui'
 
 // 星期几映射
 const WEEK_DAY_MAP: Record<WeekDay, number> = {

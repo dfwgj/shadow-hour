@@ -7,22 +7,26 @@
 
 import {
   getToolRegistry,
-  createCalendarTools,
-  createNotificationTools,
   createWebSearchTools,
   createWebFetchTools,
   WebFetchService,
-  type CalendarDataAccess,
-  type CalendarEvent as MCPCalendarEvent,
-  type NotificationService as MCPNotificationService,
-  type ScheduledNotification,
   type ToolRegistry,
   type ToolHandler,
-  type ToolDefinition,
+  type ToolDefinition
+} from "@xierfloat-monorepo/nativeScript-ai";
+import {
+  createCalendarTools,
+  type CalendarDataAccess,
+  type CalendarEvent as MCPCalendarEvent,
   type CalendarQueryParams,
   type CalendarCreateParams,
   type CalendarUpdateParams
-} from "@xierfloat-monorepo/mobile-ai";
+} from "./mcp/tools/calendarTool";
+import {
+  createNotificationTools,
+  type NotificationService as MCPNotificationService,
+  type ScheduledNotification
+} from "./mcp/tools/notificationTool";
 import { EventRepository } from "./database/repositories/eventRepository";
 import { notificationService } from "./notification";
 

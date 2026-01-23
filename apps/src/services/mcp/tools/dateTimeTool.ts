@@ -5,7 +5,7 @@
  * @date 2025-12-30
  */
 
-import { type ToolDefinition, type ToolHandler } from "@xierfloat-monorepo/mobile-ai";
+import { type ToolDefinition, type ToolHandler } from "@xierfloat-monorepo/nativeScript-ai";
 
 const WEEKDAYS = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
 

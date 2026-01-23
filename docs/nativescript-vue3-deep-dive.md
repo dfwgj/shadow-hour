@@ -22,12 +22,12 @@ NativeScript Vue3 是一个将 Vue3 响应式编程模型与原生移动开发�
 
 ### 核心特点
 
-| 特性 | 说明 |
-|------|------|
-| 原生渲染 | 直接调用 Android/iOS 原生 UI 组件 |
-| Vue3 语法 | 支持 Composition API、响应式系统 |
-| 跨平台 | 一套代码运行于 Android 和 iOS |
-| 原生访问 | 可直接调用平台 API（Java/Kotlin/ObjC/Swift）|
+| 特性      | 说明                                         |
+| --------- | -------------------------------------------- |
+| 原生渲染  | 直接调用 Android/iOS 原生 UI 组件            |
+| Vue3 语法 | 支持 Composition API、响应式系统             |
+| 跨平台    | 一套代码运行于 Android 和 iOS                |
+| 原生访问  | 可直接调用平台 API（Java/Kotlin/ObjC/Swift） |
 
 ---
 
@@ -36,35 +36,37 @@ NativeScript Vue3 是一个将 Vue3 响应式编程模型与原生移动开发�
 ### 2.1 导入方式
 
 **标准 Vue3 (Web)**
-```typescript
-import { createApp } from 'vue'
-import App from './App.vue'
 
-const app = createApp(App)
-app.mount('#app')
+```typescript
+import { createApp } from "vue";
+import App from "./App.vue";
+
+const app = createApp(App);
+app.mount("#app");
 ```
 
 **NativeScript Vue3**
+
 ```typescript
 // apps/mobile/src/app.ts
 import { createApp } from "nativescript-vue";
 import Home from "./pages/Home.vue";
 
 const app = createApp(Home);
-app.start();  // 不需要 DOM 挂载点
+app.start(); // 不需要 DOM 挂载点
 ```
 
 ### 2.2 核心差异对比
 
-| 方面 | 标准 Vue3 | NativeScript Vue3 |
-|------|-----------|-------------------|
-| 导入来源 | `from 'vue'` | `from 'nativescript-vue'` |
-| 挂载方式 | `app.mount('#app')` | `app.start()` |
-| UI 框架 | HTML/CSS/DOM | 原生组件 |
-| 路由系统 | Vue Router | Frame 导航 (`$navigateTo`) |
-| 样式系统 | CSS/Tailwind | Tailwind + CSS 变量 |
-| 数据库 | 任意 JS 数据库 | SQLite |
-| 通知 | Web Notification API | `@nativescript/local-notifications` |
+| 方面     | 标准 Vue3            | NativeScript Vue3                   |
+| -------- | -------------------- | ----------------------------------- |
+| 导入来源 | `from 'vue'`         | `from 'nativescript-vue'`           |
+| 挂载方式 | `app.mount('#app')`  | `app.start()`                       |
+| UI 框架  | HTML/CSS/DOM         | 原生组件                            |
+| 路由系统 | Vue Router           | Frame 导航 (`$navigateTo`)          |
+| 样式系统 | CSS/Tailwind         | Tailwind + CSS 变量                 |
+| 数据库   | 任意 JS 数据库       | SQLite                              |
+| 通知     | Web Notification API | `@nativescript/local-notifications` |
 
 ### 2.3 生命周期钩子
 
@@ -84,16 +86,14 @@ onMounted(async () => {
       .getResources()
       .getIdentifier("status_bar_height", "dimen", "android");
     if (resourceId > 0) {
-      const height = Utils.android.getApplicationContext()
-        .getResources()
-        .getDimensionPixelSize(resourceId);
+      const height = Utils.android.getApplicationContext().getResources().getDimensionPixelSize(resourceId);
       statusBarHeight.value = height / Screen.mainScreen.scale;
     }
   }
 });
 
 onUnmounted(() => {
-  destroyTheme();  // 清理定时器
+  destroyTheme(); // 清理定时器
 });
 ```
 
@@ -108,17 +108,18 @@ onUnmounted(() => {
 import { NativeScriptConfig } from "@nativescript/core";
 
 export default {
-  id: "org.nativescript.shadowHour",  // 应用包名
-  appPath: "src",                      // 源码目录
-  appResourcesPath: "App_Resources",   // 原生资源目录
+  id: "org.nativescript.shadowHour", // 应用包名
+  appPath: "src", // 源码目录
+  appResourcesPath: "App_Resources", // 原生资源目录
   android: {
-    v8Flags: "--expose_gc",            // 启用垃圾回收控制
-    markingMode: "none"                // GC 标记模式优化
+    v8Flags: "--expose_gc", // 启用垃圾回收控制
+    markingMode: "none" // GC 标记模式优化
   }
 } as NativeScriptConfig;
 ```
 
 **配置说明：**
+
 - `id`: Android 和 iOS 的包名标识
 - `appPath`: 源代码目录
 - `appResourcesPath`: 存放原生资源（图标、AndroidManifest.xml 等）
@@ -131,20 +132,21 @@ export default {
 module.exports = {
   content: [
     "./src/**/*.{css,xml,html,vue,svelte,ts,tsx}",
-    "../../packages/xierfloat-mobile-ui/src/**/*.{css,xml,html,vue,svelte,ts,tsx}"
+    "../../packages/nativeScript-ui/src/**/*.{css,xml,html,vue,svelte,ts,tsx}"
   ],
-  darkMode: ["class", ".ns-dark"],  // NativeScript 暗黑模式
+  darkMode: ["class", ".ns-dark"], // NativeScript 暗黑模式
   theme: {
     extend: {}
   },
   plugins: [],
   corePlugins: {
-    preflight: false  // 禁用浏览器重置样式
+    preflight: false // 禁用浏览器重置样式
   }
 };
 ```
 
 **关键配置：**
+
 - `content`: 扫描 Vue 模板和 XML 布局
 - `darkMode`: 使用 `.ns-dark` 类（而非 CSS 媒体查询）
 - `preflight: false`: 禁用浏览器特定的样式重置
@@ -237,6 +239,7 @@ app.start();
 ```
 
 **在模板中使用：**
+
 ```vue
 <VideoPlayer
   row="0"
@@ -262,7 +265,7 @@ import {
   Toast,
   ToastContainer,
   WeekScheduleGrid
-} from "@xierfloat-monorepo/mobile-ui";
+} from "@xierfloat-monorepo/nativeScript-ui";
 
 // 在模板中使用
 <MonthView
@@ -310,7 +313,7 @@ app.start();
 // Home.vue
 onMounted(async () => {
   // 1. 初始化数据库和日历系统
-  await init();  // useCalendar composable
+  await init(); // useCalendar composable
 
   // 2. 获取平台特定信息（Android 状态栏）
   if (Application.android) {
@@ -319,9 +322,7 @@ onMounted(async () => {
       .getResources()
       .getIdentifier("status_bar_height", "dimen", "android");
     if (resourceId > 0) {
-      const height = Utils.android.getApplicationContext()
-        .getResources()
-        .getDimensionPixelSize(resourceId);
+      const height = Utils.android.getApplicationContext().getResources().getDimensionPixelSize(resourceId);
       statusBarHeight.value = height / Screen.mainScreen.scale;
     }
   }
@@ -392,50 +393,65 @@ $navigateBack() = 弹出栈
 /* apps/mobile/src/app.css */
 
 /* 浅色主题（默认） */
-.theme-light, Page {
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F9FAFB;
+.theme-light,
+Page {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
   --text-primary: #111827;
-  --primary: #0038BD;
-  --primary-light: #01DAFF;
+  --primary: #0038bd;
+  --primary-light: #01daff;
 }
 
 /* 深色主题 */
 .theme-dark {
   --bg-primary: #111827;
-  --bg-secondary: #1F2937;
-  --text-primary: #F9FAFB;
-  --primary: #0038BD;
+  --bg-secondary: #1f2937;
+  --text-primary: #f9fafb;
+  --primary: #0038bd;
 }
 
 /* 主题工具类 */
-.bg-theme-primary { background-color: var(--bg-primary); }
-.text-theme-primary { color: var(--text-primary); }
-.text-theme-brand { color: var(--primary); }
+.bg-theme-primary {
+  background-color: var(--bg-primary);
+}
+.text-theme-primary {
+  color: var(--text-primary);
+}
+.text-theme-brand {
+  color: var(--primary);
+}
 
 /* 字体大小 */
-.text-xs { font-size: 10; }
-.text-sm { font-size: 12; }
-.text-base { font-size: 14; }
-.text-lg { font-size: 16; }
-.text-xl { font-size: 18; }
-.text-2xl { font-size: 20; }
-.text-3xl { font-size: 24; }
+.text-xs {
+  font-size: 10;
+}
+.text-sm {
+  font-size: 12;
+}
+.text-base {
+  font-size: 14;
+}
+.text-lg {
+  font-size: 16;
+}
+.text-xl {
+  font-size: 18;
+}
+.text-2xl {
+  font-size: 20;
+}
+.text-3xl {
+  font-size: 24;
+}
 ```
 
 ### 7.2 组件中使用样式
 
 ```vue
 <template>
-  <Label
-    :text="headerTitle"
-    class="text-2xl font-bold text-theme-primary"
-  />
+  <Label :text="headerTitle" class="text-2xl font-bold text-theme-primary" />
 
-  <GridLayout
-    columns="*, *, *, *"
-    class="bg-theme-secondary mx-4 rounded-3xl p-1 mt-2"
-  >
+  <GridLayout columns="*, *, *, *" class="bg-theme-secondary mx-4 rounded-3xl p-1 mt-2">
     <Label
       :text="tab.label"
       :class="[
@@ -458,7 +474,7 @@ export function useTheme() {
   const getColor = (colorKey: string): string => {
     // 午夜特殊颜色
     if (isBeijingMidnight() && colorKey === "primary") {
-      return "#116E15";  // 绿色
+      return "#116E15"; // 绿色
     }
     return getCssVariable(cssVarMap[colorKey], defaultColors[colorKey]);
   };
@@ -489,18 +505,17 @@ export function useTheme() {
 ```typescript
 import { isAndroid, Device, Utils, Application } from "@nativescript/core";
 
-declare const android: any;  // Android SDK 访问
+declare const android: any; // Android SDK 访问
 
 function createNotificationChannel(): void {
-  if (!isAndroid) return;  // 仅在 Android 上执行
+  if (!isAndroid) return; // 仅在 Android 上执行
 
   try {
     const sdkVersion = parseInt(Device.sdkVersion, 10);
-    if (sdkVersion >= 26) {  // Android 8.0+
+    if (sdkVersion >= 26) {
+      // Android 8.0+
       const context = Utils.android.getApplicationContext();
-      const notificationManager = context.getSystemService(
-        android.content.Context.NOTIFICATION_SERVICE
-      );
+      const notificationManager = context.getSystemService(android.content.Context.NOTIFICATION_SERVICE);
 
       const channel = new android.app.NotificationChannel(
         "calendar-reminder",
@@ -668,7 +683,9 @@ const { controller, promise } = streamRequest(
   {
     url: API_URL,
     method: "POST",
-    headers: { /* ... */ },
+    headers: {
+      /* ... */
+    },
     body: requestBody
   },
   {
@@ -686,12 +703,16 @@ const { controller, promise } = streamRequest(
         }
       }
     },
-    onError: error => { /* 错误处理 */ },
-    onComplete: () => { /* 完成处理 */ }
+    onError: error => {
+      /* 错误处理 */
+    },
+    onComplete: () => {
+      /* 完成处理 */
+    }
   }
 );
 
-streamController.value = controller;  // 保存用于中止
+streamController.value = controller; // 保存用于中止
 ```
 
 ### 9.4 数据库层

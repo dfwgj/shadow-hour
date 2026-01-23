@@ -3,10 +3,10 @@
  * 将 NotificationService 适配为 SDK 的 MCPNotificationService 接口
  */
 
-import {
-  type NotificationService as MCPNotificationService,
-  type ScheduledNotification
-} from "@xierfloat-monorepo/mobile-ai";
+import type {
+  NotificationService as MCPNotificationService,
+  ScheduledNotification
+} from "../tools/notificationTool";
 import { notificationService } from "../../notification";
 
 export class NotificationAdapter implements MCPNotificationService {

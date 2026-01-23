@@ -132,7 +132,7 @@ while ((line = reader.readLine()) !== null) {
 
 ```typescript
 // 创建 Worker
-httpWorker = new Worker("@xierfloat-monorepo/http-stream/src/workers/http-worker");
+httpWorker = new Worker("@xierfloat-monorepo/nativeScript-http-stream/src/workers/http-worker");
 
 // 接收 Worker 消息
 httpWorker.onmessage = msg => {
@@ -206,7 +206,7 @@ const data = line.startsWith("data: ")
 **解决**：使用完整包路径：
 
 ```typescript
-new Worker("@xierfloat-monorepo/http-stream/src/workers/http-worker");
+new Worker("@xierfloat-monorepo/nativeScript-http-stream/src/workers/http-worker");
 ```
 
 ## 方案优缺点
@@ -227,7 +227,7 @@ new Worker("@xierfloat-monorepo/http-stream/src/workers/http-worker");
 ## 文件结构
 
 ```
-packages/http-stream/
+packages/nativeScript-http-stream/
 ├── src/
 │   ├── index.ts           # 导出入口
 │   ├── types.ts           # 类型定义

@@ -3,13 +3,13 @@
  * 将 EventRepository 适配为 SDK 的 CalendarDataAccess 接口
  */
 
-import {
-  type CalendarDataAccess,
-  type CalendarEvent as MCPCalendarEvent,
-  type CalendarQueryParams,
-  type CalendarCreateParams,
-  type CalendarUpdateParams
-} from "@xierfloat-monorepo/mobile-ai";
+import type {
+  CalendarDataAccess,
+  CalendarEvent as MCPCalendarEvent,
+  CalendarQueryParams,
+  CalendarCreateParams,
+  CalendarUpdateParams
+} from "../tools/calendarTool";
 import { EventRepository } from "../../database/repositories/eventRepository";
 import { notificationService } from "../../notification";
 

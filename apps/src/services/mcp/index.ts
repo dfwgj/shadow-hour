@@ -7,16 +7,14 @@
 
 import {
   getToolRegistry,
-  createCalendarTools,
-  createNotificationTools,
   createWebSearchTools,
   createWebFetchTools,
   WebFetchService,
   type ToolRegistry
-} from "@xierfloat-monorepo/mobile-ai";
+} from "@xierfloat-monorepo/nativeScript-ai";
 
 import { CalendarAdapter, NotificationAdapter } from "./adapters";
-import { createDateTimeToolHandler } from "./tools";
+import { createDateTimeToolHandler, createCalendarTools, createNotificationTools } from "./tools";
 
 // 单例适配器
 let calendarAdapter: CalendarAdapter | null = null;

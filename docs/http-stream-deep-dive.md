@@ -1,6 +1,6 @@
-# HTTP-Stream 包技术深度解析
+# nativeScript-http-stream 包技术深度解析
 
-> 本文档深入分析 `@xierfloat-monorepo/http-stream` 包的实现，涵盖 Worker 线程架构、流式传输、SSE 解析和 LLM 集成等核心内容。
+> 本文档深入分析 `@xierfloat-monorepo/nativeScript-http-stream` 包的实现，涵盖 Worker 线程架构、流式传输、SSE 解析和 LLM 集成等核心内容。
 
 ## 目录
 
@@ -21,7 +21,7 @@
 
 ### 1.1 设计目的
 
-`http-stream` 包是一个 NativeScript 原生流式 HTTP 客户端，专门用于处理：
+`nativeScript-http-stream` 包是一个 NativeScript 原生流式 HTTP 客户端，专门用于处理：
 
 - **Server-Sent Events (SSE)**: 实时事件流
 - **Chunked Transfer Encoding**: 分块传输编码
@@ -29,18 +29,18 @@
 
 ### 1.2 核心特性
 
-| 特性 | 说明 |
-|------|------|
+| 特性         | 说明                        |
+| ------------ | --------------------------- |
 | 平台原生实现 | 直接使用 Java/ObjC 网络 API |
-| 后台线程执行 | UI 线程不阻塞 |
-| 统一 API | Android/iOS 相同接口 |
-| LLM 集成 | 内置 OpenAI 协议支持 |
-| 工具调用支持 | 完整的 Tool Call 状态管理 |
+| 后台线程执行 | UI 线程不阻塞               |
+| 统一 API     | Android/iOS 相同接口        |
+| LLM 集成     | 内置 OpenAI 协议支持        |
+| 工具调用支持 | 完整的 Tool Call 状态管理   |
 
 ### 1.3 包结构
 
 ```
-packages/http-stream/
+packages/nativeScript-http-stream/
 ├── src/
 │   ├── index.ts              # 公共 API 导出
 │   ├── types.ts              # 类型定义
@@ -135,10 +135,8 @@ let httpWorker: Worker | null = null;
 
 function getWorker(): Worker {
   if (!httpWorker) {
-    console.log("[http-stream] Creating HTTP Worker...");
-    httpWorker = new Worker(
-      "@xierfloat-monorepo/http-stream/src/workers/http-worker"
-    );
+    console.log("[nativeScript-http-stream] Creating HTTP Worker...");
+    httpWorker = new Worker("@xierfloat-monorepo/nativeScript-http-stream/src/workers/http-worker");
 
     httpWorker.onmessage = (msg: MessageEvent) => {
       const data = msg.data as {
@@ -189,6 +187,7 @@ switch (data.type) {
 ```
 
 **消息分发顺序**:
+
 1. `headers` - 初始响应元数据
 2. `data` - 多次数据块
 3. `complete` 或 `error` - 终止信号
@@ -208,10 +207,7 @@ if (controller.aborted) {
 ### 3.4 流式请求 API
 
 ```typescript
-export function streamRequest(
-  options: StreamRequestOptions,
-  callbacks: StreamCallbacks
-): StreamResult {
+export function streamRequest(options: StreamRequestOptions, callbacks: StreamCallbacks): StreamResult {
   const controller = createController();
   const requestId = generateRequestId();
 
@@ -223,11 +219,8 @@ export function streamRequest(
       reject
     });
 
-    const bodyStr = typeof options.body === "string"
-      ? options.body
-      : options.body
-        ? JSON.stringify(options.body)
-        : undefined;
+    const bodyStr =
+      typeof options.body === "string" ? options.body : options.body ? JSON.stringify(options.body) : undefined;
 
     const worker = getWorker();
     worker.postMessage({
@@ -357,6 +350,7 @@ function executeRequest(req: WorkerRequest) {
 ```
 
 **技术要点**:
+
 - **Java 互操作**: 直接使用 `java.net.URL` 和 `java.io.*` 类
 - **URLConnection**: 标准 Java HTTP 客户端
 - **双超时设置**: 连接超时和读取超时都设置
@@ -364,40 +358,39 @@ function executeRequest(req: WorkerRequest) {
 ### 4.3 BufferedReader 流式读取
 
 ```typescript
-    // 根据状态码获取输入流
-    let inputStream: any;
-    if (statusCode >= 200 && statusCode < 300) {
-      inputStream = connection.getInputStream();
-    } else {
-      inputStream = connection.getErrorStream();
-    }
+// 根据状态码获取输入流
+let inputStream: any;
+if (statusCode >= 200 && statusCode < 300) {
+  inputStream = connection.getInputStream();
+} else {
+  inputStream = connection.getErrorStream();
+}
 
-    // 使用 BufferedReader 逐行读取
-    reader = new java.io.BufferedReader(
-      new java.io.InputStreamReader(inputStream, "UTF-8")
-    );
+// 使用 BufferedReader 逐行读取
+reader = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream, "UTF-8"));
 
-    console.log("[http-worker] Reading response body...");
+console.log("[http-worker] Reading response body...");
 
-    let line: string | null;
-    while ((line = reader.readLine()) !== null) {
-      send({
-        id: req.id,
-        type: "data",
-        chunk: String(line)
-      });
-    }
+let line: string | null;
+while ((line = reader.readLine()) !== null) {
+  send({
+    id: req.id,
+    type: "data",
+    chunk: String(line)
+  });
+}
 
-    console.log("[http-worker] Response complete");
+console.log("[http-worker] Response complete");
 
-    // 发送完成消息
-    send({
-      id: req.id,
-      type: "complete"
-    });
+// 发送完成消息
+send({
+  id: req.id,
+  type: "complete"
+});
 ```
 
 **流式读取策略**:
+
 - **BufferedReader**: 自动按行边界分块
 - **UTF-8 编码**: 与请求头/请求体编码一致
 - **基于状态的流选择**: 成功路径 vs 错误路径
@@ -465,6 +458,7 @@ export interface StreamCallbacks {
 ```
 
 **回调顺序**:
+
 1. `onHeaders`（一次）
 2. `onData`（多次）
 3. `onComplete` 或 `onError`（一次）
@@ -539,10 +533,7 @@ data: {"more": "data"}
 ### 6.2 SSE 解析实现
 
 ```typescript
-export function sseConnect(
-  options: StreamRequestOptions,
-  callbacks: SSECallbacks
-): StreamResult {
+export function sseConnect(options: StreamRequestOptions, callbacks: SSECallbacks): StreamResult {
   let eventType: string | undefined;
   let eventData: string[] = [];
   let eventId: string | undefined;
@@ -565,7 +556,7 @@ export function sseConnect(
     }
 
     if (line.startsWith(":")) {
-      return null;  // 注释行
+      return null; // 注释行
     }
 
     const colonIndex = line.indexOf(":");
@@ -602,15 +593,15 @@ export function sseConnect(
 
   // 使用 streamRequest 并解析每行
   return streamRequest(options, {
-    onData: (line) => {
+    onData: line => {
       const event = parseLine(line);
       if (event) {
         callbacks.onEvent?.(event);
       }
     },
     onComplete: () => callbacks.onClose?.(),
-    onError: (err) => callbacks.onError?.(err),
-    onHeaders: (status) => {
+    onError: err => callbacks.onError?.(err),
+    onHeaders: status => {
       if (status >= 200 && status < 300) {
         callbacks.onOpen?.();
       }
@@ -647,7 +638,7 @@ export function sseConnect(
 ```typescript
 // Worker 错误（整个 Worker 崩溃）
 httpWorker.onerror = (error: ErrorEvent) => {
-  console.log("[http-stream] Worker error:", error.message);
+  console.log("[nativeScript-http-stream] Worker error:", error.message);
   // 通知所有待处理请求
   for (const [, pending] of pendingRequests) {
     const err = new Error(`Worker error: ${error.message}`);
@@ -668,6 +659,7 @@ case "error": {
 ```
 
 **错误分类**:
+
 1. **Worker 故障**: 崩溃影响所有待处理请求
 2. **网络错误**: 单个请求的错误消息
 
@@ -678,9 +670,7 @@ try {
   // ... 执行请求
 } catch (error: any) {
   console.log("[http-worker] Error:", error);
-  const errorMessage = error.getMessage
-    ? error.getMessage()
-    : String(error);
+  const errorMessage = error.getMessage ? error.getMessage() : String(error);
   send({
     id: req.id,
     type: "error",
@@ -698,6 +688,7 @@ try {
 ```
 
 **错误转换**:
+
 - Java 异常转换为 JavaScript 错误消息
 - 非标准异常对象的优雅降级
 - finally 块中的资源清理（保证执行）
@@ -705,11 +696,7 @@ try {
 ### 7.3 重试包装示例
 
 ```typescript
-async function retryStreamRequest(
-  options: StreamRequestOptions,
-  callbacks: StreamCallbacks,
-  maxRetries = 3
-) {
+async function retryStreamRequest(options: StreamRequestOptions, callbacks: StreamCallbacks, maxRetries = 3) {
   for (let i = 0; i < maxRetries; i++) {
     try {
       const { promise } = streamRequest(options, callbacks);
@@ -778,10 +765,7 @@ export interface LLMStreamEvent {
 ### 8.2 LLM 流式 API
 
 ```typescript
-export function streamLLM(
-  options: LLMStreamOptions,
-  callbacks: LLMStreamCallbacks
-): LLMStreamResult {
+export function streamLLM(options: LLMStreamOptions, callbacks: LLMStreamCallbacks): LLMStreamResult {
   // 构建请求
   const requestBody = {
     model: options.model,
@@ -793,11 +777,14 @@ export function streamLLM(
   };
 
   // Tool Call 状态
-  const toolCalls = new Map<number, {
-    id: string;
-    name: string;
-    arguments: string;
-  }>();
+  const toolCalls = new Map<
+    number,
+    {
+      id: string;
+      name: string;
+      arguments: string;
+    }
+  >();
 
   return streamRequest(
     {
@@ -805,12 +792,12 @@ export function streamLLM(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${options.apiKey}`
+        Authorization: `Bearer ${options.apiKey}`
       },
       body: requestBody
     },
     {
-      onData: (line) => {
+      onData: line => {
         if (!line.startsWith("data: ")) return;
 
         const jsonStr = line.slice(6).trim();
@@ -868,7 +855,7 @@ export function streamLLM(
           }
         }
       },
-      onError: (err) => {
+      onError: err => {
         callbacks.onEvent({
           type: "error",
           error: err.message
@@ -901,13 +888,13 @@ Chunk 3: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":
 
 ### 9.1 架构差异
 
-| 方面 | Android | iOS |
-|------|---------|-----|
-| 线程模型 | Worker（显式线程） | NSURLSessionDataDelegate |
-| HTTP 客户端 | `java.net.URLConnection` | `NSURLSession` |
-| I/O 模型 | 阻塞读取（BufferedReader） | 回调驱动（delegate） |
-| 缓冲管理 | 逐行在 Worker | 片段缓冲在 delegate |
-| 主线程安全 | 消息传递 | `Utils.executeOnMainThread()` |
+| 方面        | Android                    | iOS                           |
+| ----------- | -------------------------- | ----------------------------- |
+| 线程模型    | Worker（显式线程）         | NSURLSessionDataDelegate      |
+| HTTP 客户端 | `java.net.URLConnection`   | `NSURLSession`                |
+| I/O 模型    | 阻塞读取（BufferedReader） | 回调驱动（delegate）          |
+| 缓冲管理    | 逐行在 Worker              | 片段缓冲在 delegate           |
+| 主线程安全  | 消息传递                   | `Utils.executeOnMainThread()` |
 
 ### 9.2 iOS 实现（stream.ios.ts）
 
@@ -916,11 +903,7 @@ Chunk 3: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":
 class StreamDelegate extends NSObject implements NSURLSessionDataDelegate {
   private buffer = "";
 
-  URLSessionDataTaskDidReceiveData(
-    _session: NSURLSession,
-    _dataTask: NSURLSessionDataTask,
-    data: NSData
-  ): void {
+  URLSessionDataTaskDidReceiveData(_session: NSURLSession, _dataTask: NSURLSessionDataTask, data: NSData): void {
     if (controller.aborted) return;
 
     const chunk = nsDataToString(data);
@@ -940,6 +923,7 @@ class StreamDelegate extends NSObject implements NSURLSessionDataDelegate {
 ```
 
 **关键差异**:
+
 - **NSURLSession delegates** 而非 Workers
 - **片段缓冲**（NSData 可能是任意大小）
 - **行重建** 从片段
@@ -964,29 +948,29 @@ URLConnection                NSURLSession
 ### 10.1 基础流式请求
 
 ```typescript
-import { streamRequest } from "@xierfloat-monorepo/http-stream";
+import { streamRequest } from "@xierfloat-monorepo/nativeScript-http-stream";
 
 const { controller, promise } = streamRequest(
   {
     url: "https://api.openai.com/v1/chat/completions",
     method: "POST",
     headers: {
-      "Authorization": "Bearer sk-...",
-      "Content-Type": "application/json",
+      Authorization: "Bearer sk-...",
+      "Content-Type": "application/json"
     },
     body: {
       model: "gpt-4",
       messages: [{ role: "user", content: "Hello!" }],
-      stream: true,
+      stream: true
     },
     timeout: 30000
   },
   {
     onHeaders: (status, headers) => {
       console.log(`Response: ${status}`);
-      console.log(`Content-Type: ${headers['content-type']}`);
+      console.log(`Content-Type: ${headers["content-type"]}`);
     },
-    onData: (chunk) => {
+    onData: chunk => {
       if (chunk.startsWith("data: ")) {
         const json = JSON.parse(chunk.slice(6));
         console.log("Delta:", json.choices[0].delta.content);
@@ -995,7 +979,7 @@ const { controller, promise } = streamRequest(
     onComplete: () => {
       console.log("Stream complete!");
     },
-    onError: (err) => {
+    onError: err => {
       console.error("Stream error:", err.message);
     }
   }
@@ -1016,17 +1000,17 @@ setTimeout(() => controller.abort(), 5000);
 ### 10.2 SSE 实时事件
 
 ```typescript
-import { sseConnect } from "@xierfloat-monorepo/http-stream";
+import { sseConnect } from "@xierfloat-monorepo/nativeScript-http-stream";
 
 const { controller, promise } = sseConnect(
   { url: "https://example.com/events" },
   {
     onOpen: () => console.log("SSE connection opened"),
-    onEvent: (event) => {
+    onEvent: event => {
       console.log(`Event [${event.event}]:`, event.data);
     },
     onClose: () => console.log("SSE connection closed"),
-    onError: (err) => console.error("SSE error:", err.message)
+    onError: err => console.error("SSE error:", err.message)
   }
 );
 
@@ -1036,16 +1020,14 @@ await promise;
 ### 10.3 LLM Tool Calling
 
 ```typescript
-import { streamLLM } from "@xierfloat-monorepo/http-stream";
+import { streamLLM } from "@xierfloat-monorepo/nativeScript-http-stream";
 
 const { controller, promise } = streamLLM(
   {
     url: "https://api.siliconflow.cn/v1/chat/completions",
     apiKey: "sk-...",
     model: "Qwen/Qwen2.5-7B-Instruct",
-    messages: [
-      { role: "user", content: "What's the weather in Paris?" }
-    ],
+    messages: [{ role: "user", content: "What's the weather in Paris?" }],
     tools: [
       {
         type: "function",
@@ -1063,7 +1045,7 @@ const { controller, promise } = streamLLM(
     ]
   },
   {
-    onEvent: (event) => {
+    onEvent: event => {
       switch (event.type) {
         case "text":
           console.log("Text:", event.text);
@@ -1097,18 +1079,19 @@ await promise;
 
 ## 总结
 
-`http-stream` 包提供了一个强大的平台原生流式 HTTP 抽象层：
+`nativeScript-http-stream` 包提供了一个强大的平台原生流式 HTTP 抽象层：
 
-| 组件 | 用途 | 关键技术 |
-|------|------|---------|
-| **index.ts** | API 导出 | 平台特定模块重导出 |
-| **stream.android.ts** | Android 实现 | Worker 消息传递、请求追踪、SSE 解析 |
-| **http-worker.ts** | 后台网络执行 | Java 互操作、URLConnection、BufferedReader |
-| **stream.ios.ts** | iOS 实现 | NSURLSession delegates |
-| **llm-stream.ts** | OpenAI 兼容包装 | SSE 解析、Tool Call 累积 |
-| **types.ts** | 类型定义 | 所有公共 API 接口 |
+| 组件                  | 用途            | 关键技术                                   |
+| --------------------- | --------------- | ------------------------------------------ |
+| **index.ts**          | API 导出        | 平台特定模块重导出                         |
+| **stream.android.ts** | Android 实现    | Worker 消息传递、请求追踪、SSE 解析        |
+| **http-worker.ts**    | 后台网络执行    | Java 互操作、URLConnection、BufferedReader |
+| **stream.ios.ts**     | iOS 实现        | NSURLSession delegates                     |
+| **llm-stream.ts**     | OpenAI 兼容包装 | SSE 解析、Tool Call 累积                   |
+| **types.ts**          | 类型定义        | 所有公共 API 接口                          |
 
 **核心设计模式**:
+
 1. **Worker 并发**（Android）vs **原生委托**（iOS）
 2. **逐行分块** 支持 SSE 和 JSON 流
 3. **请求 ID 追踪** 关联响应到回调

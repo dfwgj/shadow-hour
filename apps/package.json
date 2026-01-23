@@ -26,9 +26,9 @@
     "@nativescript/types": "~8.8.0",
     "@nativescript/webpack": "~5.0.0",
     "@types/node": "~17.0.21",
-    "@xierfloat-monorepo/http-stream": "workspace:*",
-    "@xierfloat-monorepo/mobile-ai": "workspace:*",
-    "@xierfloat-monorepo/mobile-ui": "workspace:*",
+    "@xierfloat-monorepo/nativeScript-http-stream": "workspace:*",
+    "@xierfloat-monorepo/nativeScript-ai": "workspace:*",
+    "@xierfloat-monorepo/nativeScript-ui": "workspace:*",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.7.3"
   }

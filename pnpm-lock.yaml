@@ -163,15 +163,15 @@ importers:
       '@types/node':
         specifier: ~17.0.21
         version: 17.0.45
-      '@xierfloat-monorepo/http-stream':
+      '@xierfloat-monorepo/nativeScript-ai':
         specifier: workspace:*
-        version: link:../packages/http-stream
-      '@xierfloat-monorepo/mobile-ai':
+        version: link:../packages/nativeScript-ai
+      '@xierfloat-monorepo/nativeScript-http-stream':
         specifier: workspace:*
-        version: link:../packages/xierfloat-mobile-ai
-      '@xierfloat-monorepo/mobile-ui':
+        version: link:../packages/nativeScript-http-stream
+      '@xierfloat-monorepo/nativeScript-ui':
         specifier: workspace:*
-        version: link:../packages/xierfloat-mobile-ui
+        version: link:../packages/nativeScript-ui
       tailwindcss:
         specifier: ^3.4.3
         version: 3.4.19(yaml@2.8.1)
@@ -179,24 +179,14 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  packages/http-stream:
+  packages/nativeScript-ai:
     dependencies:
       '@nativescript/core':
         specifier: '>=8.0.0'
         version: 8.8.6
-    devDependencies:
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
-
-  packages/xierfloat-mobile-ai:
-    dependencies:
-      '@nativescript/core':
-        specifier: '>=8.0.0'
-        version: 8.8.6
-      '@xierfloat-monorepo/http-stream':
+      '@xierfloat-monorepo/nativeScript-http-stream':
         specifier: workspace:*
-        version: link:../http-stream
+        version: link:../nativeScript-http-stream
       nativescript-vue:
         specifier: ^3.0.0
         version: 3.0.2(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)
@@ -214,7 +204,17 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
-  packages/xierfloat-mobile-ui:
+  packages/nativeScript-http-stream:
+    dependencies:
+      '@nativescript/core':
+        specifier: '>=8.0.0'
+        version: 8.8.6
+    devDependencies:
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
+
+  packages/nativeScript-ui:
     dependencies:
       '@nativescript-community/sqlite':
         specifier: ^3.5.1
@@ -225,9 +225,9 @@ importers:
       '@nativescript/local-notifications':
         specifier: '>=6.0.0'
         version: 6.4.0
-      '@xierfloat-monorepo/mobile-ai':
+      '@xierfloat-monorepo/nativeScript-ai':
         specifier: workspace:*
-        version: link:../xierfloat-mobile-ai
+        version: link:../nativeScript-ai
       nativescript-vue:
         specifier: ^3.0.0
         version: 3.0.2(vue@3.5.25(typescript@5.9.3))(webpack@5.103.0)

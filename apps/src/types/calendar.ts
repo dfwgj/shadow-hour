@@ -6,7 +6,7 @@
  */
 
 // 从 packages 重新导出基础类型
-export type { WeekDay, LunarDate, WeekRow, MonthData } from '@xierfloat-monorepo/mobile-ui'
+export type { WeekDay, LunarDate, WeekRow, MonthData } from '@xierfloat-monorepo/nativeScript-ui'
 
 // 事件状态
 export type EventStatus = 'TENTATIVE' | 'CONFIRMED' | 'CANCELLED'
@@ -35,7 +35,7 @@ export interface RecurrenceRule {
   interval?: number
   count?: number
   until?: Date
-  byDay?: import('@xierfloat-monorepo/mobile-ui').WeekDay[]
+  byDay?: import('@xierfloat-monorepo/nativeScript-ui').WeekDay[]
   byMonthDay?: number[]
   byMonth?: number[]
 }
@@ -53,7 +53,7 @@ export interface CalendarEvent {
   alarms?: VAlarm[]
   created?: Date
   lastModified?: Date
-  lunar?: import('@xierfloat-monorepo/mobile-ui').LunarDate
+  lunar?: import('@xierfloat-monorepo/nativeScript-ui').LunarDate
 }
 
 // 日历视图类型
@@ -71,7 +71,7 @@ export interface CalendarSubscription {
 
 // 应用设置
 export interface CalendarSettings {
-  firstDayOfWeek: import('@xierfloat-monorepo/mobile-ui').WeekDay
+  firstDayOfWeek: import('@xierfloat-monorepo/nativeScript-ui').WeekDay
   showLunar: boolean
   showWeekNumber: boolean
   defaultView: CalendarViewType

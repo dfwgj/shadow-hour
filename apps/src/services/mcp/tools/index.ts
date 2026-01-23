@@ -5,3 +5,5 @@
  */
 
 export { dateTimeToolDefinition, createDateTimeToolHandler } from "./dateTimeTool";
+export * from "./calendarTool";
+export * from "./notificationTool";

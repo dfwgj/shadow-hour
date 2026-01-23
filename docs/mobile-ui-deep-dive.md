@@ -1,6 +1,6 @@
-# xierfloat-mobile-ui 组件库深度解析
+# nativeScript-ui 组件库深度解析
 
-> 本文档深入分析 `@xierfloat-monorepo/mobile-ui` 组件库的实现，涵盖日历组件、Toast 通知系统、工具函数和主题系统等核心内容。
+> 本文档深入分析 `@xierfloat-monorepo/nativeScript-ui` 组件库的实现，涵盖日历组件、Toast 通知系统、工具函数和主题系统等核心内容。
 
 ## 目录
 
@@ -20,22 +20,22 @@
 
 ### 1.1 设计目的
 
-`xierfloat-mobile-ui` 是一个专为 NativeScript Vue 3 设计的移动端 UI 组件库，主要用于日历和事件管理应用。
+`nativeScript-ui` 是一个专为 NativeScript Vue 3 设计的移动端 UI 组件库，主要用于日历和事件管理应用。
 
 ### 1.2 核心特性
 
-| 特性 | 说明 |
-|------|------|
-| 原生组件 | 基于 NativeScript 原生 UI |
+| 特性       | 说明                         |
+| ---------- | ---------------------------- |
+| 原生组件   | 基于 NativeScript 原生 UI    |
 | Vue 3 支持 | Composition API + TypeScript |
-| 农历支持 | 完整的农历转换和节日显示 |
-| 主题系统 | 支持浅色/深色模式切换 |
-| 手势交互 | 滑动手势导航 |
+| 农历支持   | 完整的农历转换和节日显示     |
+| 主题系统   | 支持浅色/深色模式切换        |
+| 手势交互   | 滑动手势导航                 |
 
 ### 1.3 包结构
 
 ```
-packages/xierfloat-mobile-ui/
+packages/nativeScript-ui/
 ├── src/
 │   ├── components/           # Vue 组件
 │   │   ├── calendar/        # 日历视图
@@ -117,6 +117,7 @@ export type { UIThemeColors } from "./theme";
 月历网格显示组件，展示完整的月份日历。
 
 **核心特性：**
+
 - 6周 × 7天的网格布局
 - 触摸滑动手势检测（左/右）
 - 月份切换滑动动画
@@ -128,13 +129,7 @@ export type { UIThemeColors } from "./theme";
 ```typescript
 // MonthView.vue
 const monthGrid = computed(() =>
-  generateMonthGrid(
-    props.year,
-    props.month,
-    props.selectedDate,
-    props.firstDayOfWeek,
-    props.showLunar
-  )
+  generateMonthGrid(props.year, props.month, props.selectedDate, props.firstDayOfWeek, props.showLunar)
 );
 ```
 
@@ -162,10 +157,7 @@ function onTouch(args: TouchGestureEventData) {
 **滑动动画：**
 
 ```typescript
-async function playSlideAnimation(
-  direction: "left" | "right",
-  onMiddle?: () => void
-): Promise<void> {
+async function playSlideAnimation(direction: "left" | "right", onMiddle?: () => void): Promise<void> {
   const view = contentRef.value?.nativeView;
   if (!view || isAnimating.value) return;
 
@@ -204,6 +196,7 @@ async function playSlideAnimation(
 显示 12 个月份的 3×4 网格概览。
 
 **核心特性：**
+
 - 3 列 × 4 行月份网格
 - 当前月份边框高亮
 - 今日高亮
@@ -229,6 +222,7 @@ async function playSlideAnimation(
 显示单周的详细日历。
 
 **核心特性：**
+
 - 左侧周数显示（ISO 标准）
 - 7 天列带小时行
 - 农历支持
@@ -239,6 +233,7 @@ async function playSlideAnimation(
 带时间轴和事件的周日程网格。
 
 **核心特性：**
+
 - 左侧 0-24 小时时间轴
 - 7 天列
 - 事件渲染与重叠检测
@@ -249,17 +244,11 @@ async function playSlideAnimation(
 **事件重叠检测：**
 
 ```typescript
-function getOverlappingEvents(
-  dayIndex: number,
-  startHour: number,
-  endHour: number
-): CalendarEvent[] {
+function getOverlappingEvents(dayIndex: number, startHour: number, endHour: number): CalendarEvent[] {
   const dayEvents = getEventsForDay(dayIndex);
-  return dayEvents.filter((event) => {
+  return dayEvents.filter(event => {
     const eventStart = ensureDate(event.dtStart);
-    const eventEnd = event.dtEnd
-      ? ensureDate(event.dtEnd)
-      : new Date(eventStart.getTime() + 3600000);
+    const eventEnd = event.dtEnd ? ensureDate(event.dtEnd) : new Date(eventStart.getTime() + 3600000);
     const eventStartHour = eventStart.getHours() + eventStart.getMinutes() / 60;
     const eventEndHour = eventEnd.getHours() + eventEnd.getMinutes() / 60;
     return eventStartHour < endHour && eventEndHour > startHour;
@@ -279,7 +268,7 @@ const renderEvents = computed<RenderEvent[]>(() => {
       (a, b) => ensureDate(a.dtStart).getTime() - ensureDate(b.dtStart).getTime()
     );
 
-    dayEvents.forEach((event) => {
+    dayEvents.forEach(event => {
       const startHour = Math.floor(eventStart.getHours());
       const slotKey = `${dayIndex}-${startHour}`;
 
@@ -333,10 +322,7 @@ class ToastServiceProxy implements IToastService {
     return (globalThis as any).__toastService;
   }
 
-  private execute<K extends keyof IToastService>(
-    method: K,
-    ...args: Parameters<IToastService[K]>
-  ): void {
+  private execute<K extends keyof IToastService>(method: K, ...args: Parameters<IToastService[K]>): void {
     const service = this.getService();
     if (service) {
       (service[method] as (...args: any[]) => void)(...args);
@@ -410,13 +396,7 @@ export const Toast: IToastService = new ToastServiceProxy();
       justifyContent="center"
       width="32%"
       height="14%"
-      :verticalAlignment="
-        toast.position === 'top'
-          ? 'top'
-          : toast.position === 'bottom'
-            ? 'bottom'
-            : 'center'
-      "
+      :verticalAlignment="toast.position === 'top' ? 'top' : toast.position === 'bottom' ? 'bottom' : 'center'"
       horizontalAlignment="center"
       :marginTop="toast.position === 'top' ? 60 : 0"
       :marginBottom="toast.position === 'bottom' ? 60 : 0"
@@ -433,10 +413,7 @@ export const Toast: IToastService = new ToastServiceProxy();
         borderRadius="16"
         :style="{ backgroundColor: getTypeColor(toast.type) }"
       >
-        <Label
-          :text="getTypeIcon(toast.type)"
-          class="text-white text-lg font-bold"
-        />
+        <Label :text="getTypeIcon(toast.type)" class="text-white text-lg font-bold" />
       </FlexboxLayout>
       <!-- 消息 -->
       <Label
@@ -453,12 +430,12 @@ export const Toast: IToastService = new ToastServiceProxy();
 
 ### 3.3 Toast 类型与颜色
 
-| 类型 | 背景色 | 图标色 | 图标 |
-|------|--------|--------|------|
-| success | #F0F9EB | #67C23A | ✓ |
-| error | #FEF0F0 | #F56C6C | ✕ |
-| warning | #FDF6EC | #E6A23C | ! |
-| info | #ECF5FF | #409EFF | i |
+| 类型    | 背景色  | 图标色  | 图标 |
+| ------- | ------- | ------- | ---- |
+| success | #F0F9EB | #67C23A | ✓    |
+| error   | #FEF0F0 | #F56C6C | ✕    |
+| warning | #FDF6EC | #E6A23C | !    |
+| info    | #ECF5FF | #409EFF | i    |
 
 ### 3.4 动画配置
 
@@ -491,6 +468,7 @@ view.animate({
 带滑动删除功能的事件信息卡片。
 
 **核心特性：**
+
 - 左侧颜色条指示事件颜色
 - 事件标题和时间显示
 - 左滑显示删除按钮
@@ -606,12 +584,7 @@ function getWeekOfYear(date: Date, firstDay: WeekDay = "MO"): number {
 /**
  * 生成周网格数据
  */
-function generateWeekGrid(
-  month: number,
-  selectedDate: Date | null,
-  firstDay: WeekDay,
-  showLunar: boolean
-): WeekRow[] {
+function generateWeekGrid(month: number, selectedDate: Date | null, firstDay: WeekDay, showLunar: boolean): WeekRow[] {
   // 实现...
 }
 
@@ -631,11 +604,7 @@ function generateMonthGrid(
 /**
  * 生成年视图月份数据
  */
-function generateYearMonthData(
-  year: number,
-  month: number,
-  firstDay: WeekDay
-): (number | null)[] {
+function generateYearMonthData(year: number, month: number, firstDay: WeekDay): (number | null)[] {
   // 实现...
 }
 ```
@@ -669,15 +638,15 @@ function isSpecialDay(lunar: LunarDate): boolean {
 }
 
 // 数据表
-const LUNAR_INFO: number[];        // 1900-2100 农历数据
-const TIAN_GAN: string[];          // 天干
-const DI_ZHI: string[];            // 地支
-const ZODIAC: string[];            // 生肖
+const LUNAR_INFO: number[]; // 1900-2100 农历数据
+const TIAN_GAN: string[]; // 天干
+const DI_ZHI: string[]; // 地支
+const ZODIAC: string[]; // 生肖
 const LUNAR_MONTH_NAMES: string[]; // 农历月名
-const LUNAR_DAY_NAMES: string[];   // 农历日名
-const SOLAR_TERMS: string[];       // 二十四节气
-const LUNAR_FESTIVALS: Record<string, string>;  // 农历节日
-const SOLAR_FESTIVALS: Record<string, string>;  // 公历节日
+const LUNAR_DAY_NAMES: string[]; // 农历日名
+const SOLAR_TERMS: string[]; // 二十四节气
+const LUNAR_FESTIVALS: Record<string, string>; // 农历节日
+const SOLAR_FESTIVALS: Record<string, string>; // 公历节日
 ```
 
 ---
@@ -698,18 +667,18 @@ type WeekDay = "SU" | "MO" | "TU" | "WE" | "TH" | "FR" | "SA";
  * 农历日期
  */
 interface LunarDate {
-  year: number;           // 农历年
-  month: number;          // 农历月 (1-12)
-  day: number;            // 农历日
-  isLeapMonth: boolean;   // 是否闰月
-  yearGanZhi: string;     // 年干支 (如 "甲子")
-  monthGanZhi: string;    // 月干支
-  dayGanZhi: string;      // 日干支
-  zodiac: string;         // 生肖 (如 "鼠")
+  year: number; // 农历年
+  month: number; // 农历月 (1-12)
+  day: number; // 农历日
+  isLeapMonth: boolean; // 是否闰月
+  yearGanZhi: string; // 年干支 (如 "甲子")
+  monthGanZhi: string; // 月干支
+  dayGanZhi: string; // 日干支
+  zodiac: string; // 生肖 (如 "鼠")
   lunarMonthName: string; // 农历月名 (如 "正月")
-  lunarDayName: string;   // 农历日名 (如 "初一")
-  term?: string;          // 节气
-  festival?: string;      // 节日
+  lunarDayName: string; // 农历日名 (如 "初一")
+  term?: string; // 节气
+  festival?: string; // 节日
 }
 
 /**
@@ -738,8 +707,8 @@ interface WeekRow {
  */
 interface MonthData {
   name: string;
-  month: number;              // 0-11
-  days: (number | null)[];    // null 为空白格
+  month: number; // 0-11
+  days: (number | null)[]; // null 为空白格
 }
 ```
 
@@ -754,7 +723,7 @@ type ToastPosition = "top" | "center" | "bottom";
 interface ToastOptions {
   message: string;
   type?: ToastType;
-  duration?: number;              // 毫秒，0 = 不自动关闭
+  duration?: number; // 毫秒，0 = 不自动关闭
   position?: ToastPosition;
   showClose?: boolean;
   onClose?: () => void;
@@ -811,11 +780,11 @@ const defaultLightColors: UIThemeColors = {
   textPrimary: "#111827",
   textSecondary: "#6B7280",
   textTertiary: "#9CA3AF",
-  primary: "#F97316",       // 橙色主色
-  success: "#10B981",       // 绿色
-  warning: "#F59E0B",       // 琥珀色
-  error: "#EF4444",         // 红色
-  info: "#3B82F6",          // 蓝色
+  primary: "#F97316", // 橙色主色
+  success: "#10B981", // 绿色
+  warning: "#F59E0B", // 琥珀色
+  error: "#EF4444", // 红色
+  info: "#3B82F6", // 蓝色
   border: "#E5E7EB",
   today: "#F97316",
   holiday: "#EF4444"
@@ -876,10 +845,7 @@ function configureDarkColors(colors: Partial<UIThemeColors>): void;
 /**
  * 完整配置主题
  */
-function configureTheme(config: {
-  light?: Partial<UIThemeColors>;
-  dark?: Partial<UIThemeColors>;
-}): void;
+function configureTheme(config: { light?: Partial<UIThemeColors>; dark?: Partial<UIThemeColors> }): void;
 
 /**
  * 重置主题为默认
@@ -893,39 +859,42 @@ function resetTheme(): void;
 
 ### 8.1 MonthView
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| year | Number | 当前年 | 显示年份 |
-| month | Number | 当前月 | 月份 (0-11) |
-| today | Date | new Date() | 今日参考 |
-| selectedDate | Date | null | 选中日期 |
-| firstDayOfWeek | WeekDay | "MO" | 周起始日 |
-| showLunar | Boolean | true | 显示农历 |
-| showOutsideDays | Boolean | true | 显示上下月 |
-| color | String | "#F97316" | 主色调 |
+| 属性            | 类型    | 默认值     | 说明        |
+| --------------- | ------- | ---------- | ----------- |
+| year            | Number  | 当前年     | 显示年份    |
+| month           | Number  | 当前月     | 月份 (0-11) |
+| today           | Date    | new Date() | 今日参考    |
+| selectedDate    | Date    | null       | 选中日期    |
+| firstDayOfWeek  | WeekDay | "MO"       | 周起始日    |
+| showLunar       | Boolean | true       | 显示农历    |
+| showOutsideDays | Boolean | true       | 显示上下月  |
+| color           | String  | "#F97316"  | 主色调      |
 
 **事件：**
+
 ```typescript
 emit("select", date: Date)           // 点击日期
 emit("swipe", direction: "left" | "right")  // 滑动检测
 ```
 
 **暴露方法：**
+
 ```typescript
 playSlideAnimation(direction: "left" | "right", onMiddle?: () => void): Promise<void>
 ```
 
 ### 8.2 YearView
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| year | Number | 当前年 | 显示年份 |
-| selectedDate | Date | undefined | 选中日期高亮 |
-| firstDayOfWeek | WeekDay | "MO" | 周起始日 |
-| showToday | Boolean | true | 高亮今日 |
-| color | String | "#F97316" | 主色调 |
+| 属性           | 类型    | 默认值    | 说明         |
+| -------------- | ------- | --------- | ------------ |
+| year           | Number  | 当前年    | 显示年份     |
+| selectedDate   | Date    | undefined | 选中日期高亮 |
+| firstDayOfWeek | WeekDay | "MO"      | 周起始日     |
+| showToday      | Boolean | true      | 高亮今日     |
+| color          | String  | "#F97316" | 主色调       |
 
 **事件：**
+
 ```typescript
 emit("select", date: Date)
 emit("monthTap", month: number)
@@ -934,16 +903,17 @@ emit("swipe", direction: "left" | "right")
 
 ### 8.3 WeekScheduleGrid
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| selectedDate | Date | new Date() | 周参考日期 |
-| firstDayOfWeek | WeekDay | "MO" | 周起始日 |
-| events | CalendarEvent[] | [] | 事件数据 |
-| color | String | "#F97316" | 默认事件颜色 |
-| hourHeight | Number | 60 | 每小时单元格高度 |
-| timeColumnWidth | Number | 36 | 时间列宽度 |
+| 属性            | 类型            | 默认值     | 说明             |
+| --------------- | --------------- | ---------- | ---------------- |
+| selectedDate    | Date            | new Date() | 周参考日期       |
+| firstDayOfWeek  | WeekDay         | "MO"       | 周起始日         |
+| events          | CalendarEvent[] | []         | 事件数据         |
+| color           | String          | "#F97316"  | 默认事件颜色     |
+| hourHeight      | Number          | 60         | 每小时单元格高度 |
+| timeColumnWidth | Number          | 36         | 时间列宽度       |
 
 **事件：**
+
 ```typescript
 emit("event-tap", event: CalendarEvent)
 emit("cell-tap", date: Date, hour: number)
@@ -952,18 +922,19 @@ emit("multi-event", date: Date, hour: number, events: CalendarEvent[])
 
 ### 8.4 EventCard
 
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| title | String | 必填 | 事件标题 |
-| startTime | Date | 必填 | 开始时间 |
-| endTime | Date | undefined | 结束时间 |
-| color | String | "#3B82F6" | 左侧颜色条 |
-| deleteWidth | Number | 80 | 删除按钮宽度 |
+| 属性        | 类型   | 默认值    | 说明         |
+| ----------- | ------ | --------- | ------------ |
+| title       | String | 必填      | 事件标题     |
+| startTime   | Date   | 必填      | 开始时间     |
+| endTime     | Date   | undefined | 结束时间     |
+| color       | String | "#3B82F6" | 左侧颜色条   |
+| deleteWidth | Number | 80        | 删除按钮宽度 |
 
 **事件：**
+
 ```typescript
-emit("tap")        // 卡片点击
-emit("delete")     // 删除按钮点击
+emit("tap"); // 卡片点击
+emit("delete"); // 删除按钮点击
 ```
 
 ---
@@ -991,7 +962,7 @@ emit("delete")     // 删除按钮点击
 
 <script setup lang="ts">
 import { ref } from "nativescript-vue";
-import { MonthView } from "@xierfloat-monorepo/mobile-ui";
+import { MonthView } from "@xierfloat-monorepo/nativeScript-ui";
 
 const monthViewRef = ref<InstanceType<typeof MonthView>>();
 const currentYear = ref(new Date().getFullYear());
@@ -1043,7 +1014,7 @@ async function onSwipe(direction: "left" | "right") {
 
 <script setup lang="ts">
 import { ref } from "nativescript-vue";
-import { WeekScheduleGrid, type CalendarEvent } from "@xierfloat-monorepo/mobile-ui";
+import { WeekScheduleGrid, type CalendarEvent } from "@xierfloat-monorepo/nativeScript-ui";
 
 const selectedDate = ref(new Date());
 const events = ref<CalendarEvent[]>([
@@ -1080,7 +1051,7 @@ function onMultiEvent(date: Date, hour: number, events: CalendarEvent[]) {
 ### 9.3 Toast 通知使用
 
 ```typescript
-import { Toast, useToast } from "@xierfloat-monorepo/mobile-ui";
+import { Toast, useToast } from "@xierfloat-monorepo/nativeScript-ui";
 
 // 方式 1: 直接调用
 Toast.success("保存成功");
@@ -1125,7 +1096,7 @@ Toast.closeAll();
 </template>
 
 <script setup lang="ts">
-import { EventCard } from "@xierfloat-monorepo/mobile-ui";
+import { EventCard } from "@xierfloat-monorepo/nativeScript-ui";
 
 function onEventTap(event) {
   console.log("Tap:", event.summary);
@@ -1140,15 +1111,15 @@ function onEventDelete(event) {
 ### 9.5 农历工具使用
 
 ```typescript
-import { solarToLunar, getLunarDayText, isSpecialDay } from "@xierfloat-monorepo/mobile-ui";
+import { solarToLunar, getLunarDayText, isSpecialDay } from "@xierfloat-monorepo/nativeScript-ui";
 
 const date = new Date(2024, 0, 1); // 2024年1月1日
 const lunar = solarToLunar(date);
 
 console.log(lunar.lunarMonthName); // "腊月"
-console.log(lunar.lunarDayName);   // "二十"
-console.log(lunar.yearGanZhi);     // "癸卯"
-console.log(lunar.zodiac);         // "兔"
+console.log(lunar.lunarDayName); // "二十"
+console.log(lunar.yearGanZhi); // "癸卯"
+console.log(lunar.zodiac); // "兔"
 
 // 获取显示文本（优先显示节日/节气）
 const displayText = getLunarDayText(lunar); // "元旦" 或 "二十"
@@ -1163,18 +1134,18 @@ if (isSpecialDay(lunar)) {
 
 ## 总结
 
-`xierfloat-mobile-ui` 组件库提供了完整的日历和事件管理解决方案：
+`nativeScript-ui` 组件库提供了完整的日历和事件管理解决方案：
 
-| 特性 | 组件/工具 | 说明 |
-|------|----------|------|
-| 滑动导航 | MonthView, YearView, WeekView | 水平滑动切换月份/年份 |
-| 滑动动画 | 所有日历组件 | 平滑的退出/进入过渡 |
-| 农历支持 | MonthView, WeekView + lunar.ts | 中国农历转换及节日显示 |
-| 事件调度 | WeekScheduleGrid | 24小时时间网格及事件显示 |
-| 重叠检测 | WeekScheduleGrid | 多事件显示及计数指示 |
-| Toast 通知 | ToastContainer | 带队列管理的集中式通知系统 |
-| 主题系统 | theme/index.ts | 浅色/深色模式及自定义颜色 |
-| 滑动删除 | EventCard | 滑动显示删除操作 |
-| ISO 周数 | WeekView | ISO 8601 标准周计算 |
+| 特性       | 组件/工具                      | 说明                       |
+| ---------- | ------------------------------ | -------------------------- |
+| 滑动导航   | MonthView, YearView, WeekView  | 水平滑动切换月份/年份      |
+| 滑动动画   | 所有日历组件                   | 平滑的退出/进入过渡        |
+| 农历支持   | MonthView, WeekView + lunar.ts | 中国农历转换及节日显示     |
+| 事件调度   | WeekScheduleGrid               | 24小时时间网格及事件显示   |
+| 重叠检测   | WeekScheduleGrid               | 多事件显示及计数指示       |
+| Toast 通知 | ToastContainer                 | 带队列管理的集中式通知系统 |
+| 主题系统   | theme/index.ts                 | 浅色/深色模式及自定义颜色  |
+| 滑动删除   | EventCard                      | 滑动显示删除操作           |
+| ISO 周数   | WeekView                       | ISO 8601 标准周计算        |
 
 这个组件库为 NativeScript Vue 3 移动应用提供了生产就绪的日历和通知系统，具有丰富的自定义能力、触摸友好的交互和完整的日期/农历支持。

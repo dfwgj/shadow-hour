@@ -7,7 +7,7 @@
  */
 import { ref, computed, onMounted, watch, nextTick, shallowRef, $navigateTo, $navigateBack } from "nativescript-vue";
 import { Screen, Application, Utils, ApplicationSettings, Dialogs } from "@nativescript/core";
-import { Toast } from "@xierfloat-monorepo/mobile-ui";
+import { Toast } from "@xierfloat-monorepo/nativeScript-ui";
 import {
   useAgent,
   loadSkills,
@@ -17,7 +17,7 @@ import {
   getToolRegistry,
   type LLMConfig,
   type Message
-} from "@xierfloat-monorepo/mobile-ai";
+} from "@xierfloat-monorepo/nativeScript-ai";
 import AIConfig from "./AIConfig.vue";
 import HistoryDrawer from "../components/HistoryDrawer.vue";
 import { parseMarkdown } from "@/utils/markdown";
