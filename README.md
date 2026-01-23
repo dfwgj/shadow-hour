@@ -19,7 +19,7 @@
 
 ## 灵感来源
 
-> *"在影时间中，时间静止，只有人格面具使用者才能行动。"*
+> _"在影时间中，时间静止，只有人格面具使用者才能行动。"_
 
 本项目灵感来源于 ATLUS 经典 JRPG 游戏《**女神异闻录 (Persona)**》系列：
 
@@ -27,7 +27,7 @@
 - **时间管理系统** - 借鉴 Persona 系列标志性的日程规划与社群经营玩法
 - **AI 助手埃癸斯** - 埃癸斯将成为你日程管理的得力搭档
 
-*本项目为粉丝致敬作品，与 ATLUS 官方无关。*
+_本项目为粉丝致敬作品，与 ATLUS 官方无关。_
 
 ---
 
@@ -37,16 +37,17 @@
 
 - 支持SiliconFlow提供商
 - 流式响应，实时对话体验
-- MCP 协议工具调用，AI 可直接操作日历和通知
+- MCP 协议工具调用，AI 可直接操作日历和通知，内置网络搜索页面读取工具
+- 支持自定义技能，扩展功能
 - SKILL协议轻量化实现，按需加载技能
-<img src=".github\image\埃癸斯.png" alt="智能助手埃癸斯"> <img src=".github\image\agent.png" alt="智能助手埃癸斯"> <img src=".github\image\history.png" alt="对话历史">
+  <img src=".github\image\埃癸斯.png" alt="智能助手埃癸斯" width="150" > <img src=".github\image\agent.png" alt="智能助手埃癸斯" width="150" > <img src=".github\image\history.png" alt="对话历史" width="150" >
 
 ### 日程管理
 
 - 日历事件的增删改查
 - 智能日程安排建议
 - 本地通知提醒
-<img src=".github\image\year.png" alt="年份"> <img src=".github\image\month.png" alt="月份"> <img src=".github\image\week.png" alt="周历">
+  <img src=".github\image\year.png" alt="年份" width="150" > <img src=".github\image\month.png" alt="月份" width="150" > <img src=".github\image\week.png" alt="周历" width="150" >
 
 ### 技术架构
 
