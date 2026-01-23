@@ -2,7 +2,7 @@
   <img src="apps/App_Resources/Android/src/main/res/mipmap-xhdpi/ic_launcher.png" alt="Shadow Hour" width="96" height="96">
 </p>
 
-<h1 align="center">影时 Shadow Hour</h1>
+<h1 align="center">影时间 Shadow Hour</h1>
 
 <p align="center">
   基于 NativeScript Vue3 的智能日程管理移动应用
@@ -19,13 +19,13 @@
 
 ## 灵感来源
 
-> *"在影时间中，时间静止，只有觉醒者才能行动。"*
+> *"在影时间中，时间静止，只有人格面具使用者才能行动。"*
 
 本项目灵感来源于 ATLUS 经典 JRPG 游戏《**女神异闻录 (Persona)**》系列：
 
-- **影时 (Shadow Hour)** - 致敬 P3 中的「影时间」概念，寓意在忙碌生活中找到属于自己的时间
+- **影时间 (Shadow Hour)** - 致敬 P3 中的「影时间」概念，寓意在忙碌生活中找到属于自己的时间，挤出额外的一小时
 - **时间管理系统** - 借鉴 Persona 系列标志性的日程规划与社群经营玩法
-- **AI 伙伴** - 如同游戏中的 Persona，AI 助手将成为你日程管理的得力搭档
+- **AI 助手埃癸斯** - 埃癸斯将成为你日程管理的得力搭档
 
 *本项目为粉丝致敬作品，与 ATLUS 官方无关。*
 
@@ -39,12 +39,14 @@
 - 流式响应，实时对话体验
 - MCP 协议工具调用，AI 可直接操作日历和通知
 - SKILL协议轻量化实现，按需加载技能
+<img src=".github\image\埃癸斯.png" alt="智能助手埃癸斯"> <img src=".github\image\agent.png" alt="智能助手埃癸斯"> <img src=".github\image\history.png" alt="对话历史">
 
 ### 日程管理
 
 - 日历事件的增删改查
 - 智能日程安排建议
 - 本地通知提醒
+<img src=".github\image\year.png" alt="年份"> <img src=".github\image\month.png" alt="月份"> <img src=".github\image\week.png" alt="周历">
 
 ### 技术架构
 
@@ -123,6 +125,14 @@ cd apps && ns build android --release
 | 样式   | TailwindCSS                     |
 | 存储   | SQLite + ApplicationSettings    |
 | AI     | OpenAI API / Anthropic API 兼容 |
+
+## 致谢
+
+感谢以下开源项目的支持与启发：
+
+- [**AgentX**](https://github.com/Deepractice/AgentX) - AI Agent 架构设计参考
+- [**nativescript-vue**](https://github.com/nativescript-vue/nativescript-vue) - NativeScript 的 Vue.js 集成
+- [**NativeScript**](https://github.com/NativeScript/NativeScript) - 跨平台原生应用框架
 
 ## License
 
