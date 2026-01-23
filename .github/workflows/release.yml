@@ -9,6 +9,9 @@ env:
   NODE_VERSION: '20'
   JAVA_VERSION: '17'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
