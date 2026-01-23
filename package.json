@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "xierfloat-monorepo-mobile",
+  "name": "xierfloat-monorepo-shadow-hour",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
