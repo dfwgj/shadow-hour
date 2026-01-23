@@ -8,7 +8,7 @@ import type { Skill, SkillMetadata, SkillSearchResult, SkillRegistryConfig, Skil
 import { parseSkill, extractMetadata, skillsToPrompt } from './SkillParser'
 
 /**
- * 计算两个字符串的相似度（简单实现）
+ * 计算两个字符串的相似度
  */
 function calculateSimilarity(str1: string, str2: string): number {
   const s1 = str1.toLowerCase()

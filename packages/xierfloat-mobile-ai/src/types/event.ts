@@ -4,8 +4,6 @@
  * 参考 AgentX 四层事件系统设计
  */
 
-import type { Message } from "./message";
-
 /** Agent 状态 */
 export type AgentState =
   | "idle" // 空闲，等待输入
@@ -29,9 +27,6 @@ export type StreamEventType =
 
 /** 状态事件类型 */
 export type StateEventType = "state_change" | "conversation_start" | "conversation_end";
-
-/** 消息事件类型 */
-export type MessageEventType = "user_message" | "assistant_message" | "tool_call_message" | "tool_result_message";
 
 /** 工具事件类型 */
 export type ToolEventType = "tool_call_start" | "tool_call_result" | "tool_call_error";
@@ -123,16 +118,7 @@ export type StateEvent =
   | BaseStreamEvent<"conversation_start", ConversationStartData>
   | BaseStreamEvent<"conversation_end", ConversationEndData>;
 
-// ==================== Layer 3: Message Events (消息事件) ====================
-
-/** 消息事件 */
-export interface MessageEvent {
-  type: MessageEventType;
-  timestamp: number;
-  data: Message;
-}
-
-// ==================== Layer 4: Tool Events (工具事件) ====================
+// ==================== Layer 3: Tool Events (工具事件) ====================
 
 /** 工具调用开始数据 */
 export interface ToolCallStartEventData {
@@ -165,7 +151,7 @@ export type ToolEvent =
 // ==================== All Events ====================
 
 /** 所有 Agent 事件 */
-export type AgentEvent = StreamEvent | StateEvent | MessageEvent | ToolEvent;
+export type AgentEvent = StreamEvent | StateEvent | ToolEvent;
 
 /** 事件处理器 */
 export type EventHandler<T = AgentEvent> = (event: T) => void;

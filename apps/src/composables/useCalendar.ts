@@ -6,8 +6,6 @@
 import { ref, computed } from "nativescript-vue";
 import type { CalendarViewType, WeekDay, CalendarEvent } from "../types/calendar";
 import {
-  generateMonthGrid,
-  generateWeekDays,
   addMonths,
   addDays,
   getMonthName,
@@ -79,16 +77,6 @@ export function useCalendar() {
 
   // 星期名称
   const weekDayNames = computed(() => getWeekDayNames(firstDayOfWeek.value));
-
-  // 月视图网格数据
-  const monthGrid = computed(() =>
-    generateMonthGrid(currentDate.value, selectedDate.value, events.value, firstDayOfWeek.value)
-  );
-
-  // 周视图数据
-  const weekDays = computed(() =>
-    generateWeekDays(currentDate.value, selectedDate.value, events.value, firstDayOfWeek.value)
-  );
 
   // 选中日期的事件
   const selectedDateEvents = computed(() =>
@@ -291,8 +279,6 @@ export function useCalendar() {
     weekTitle,
     dayTitle,
     weekDayNames,
-    monthGrid,
-    weekDays,
     selectedDateEvents,
 
     // 方法

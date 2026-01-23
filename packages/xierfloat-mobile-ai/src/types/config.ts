@@ -11,6 +11,7 @@ export type LLMProvider =
   | 'ollama'
   | 'moonshot'
   | 'zhipu'
+  | 'siliconflow'
   | 'custom'
 
 /** LLM 配置 */
@@ -136,5 +137,29 @@ export const LLM_PRESETS: Record<string, LLMConfigPreset> = {
     supportsTools: true,
     supportsStreaming: true,
     description: 'Kimi 智能助手'
+  },
+  'siliconflow-glm4': {
+    name: '硅基流动 GLM-4',
+    provider: 'siliconflow',
+    baseUrl: 'https://api.siliconflow.cn/v1',
+    model: 'THUDM/glm-4-9b-chat',
+    maxTokens: 4096,
+    temperature: 0.7,
+    supportsVision: false,
+    supportsTools: true,
+    supportsStreaming: true,
+    description: '硅基流动托管的 GLM-4 模型'
+  },
+  'siliconflow-qwen': {
+    name: '硅基流动 Qwen2.5',
+    provider: 'siliconflow',
+    baseUrl: 'https://api.siliconflow.cn/v1',
+    model: 'Qwen/Qwen2.5-7B-Instruct',
+    maxTokens: 4096,
+    temperature: 0.7,
+    supportsVision: false,
+    supportsTools: true,
+    supportsStreaming: true,
+    description: '硅基流动托管的通义千问模型'
   }
 }

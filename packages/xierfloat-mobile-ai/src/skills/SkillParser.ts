@@ -30,11 +30,11 @@ function parseYamlFrontmatter(content: string): { metadata: Partial<SkillMetadat
   }
 
   const yamlContent = match[1]
-  const body = match[2].trim()
+  const body = match[2]?.trim() ?? ''
 
   // 简单的 YAML 解析（不引入外部依赖）
   const metadata: Partial<SkillMetadata> = {}
-  const lines = yamlContent.split('\n')
+  const lines = yamlContent ? yamlContent.split('\n') : []
 
   for (const line of lines) {
     const colonIndex = line.indexOf(':')
@@ -81,8 +81,8 @@ function validateMetadata(metadata: Partial<SkillMetadata>, id: string): SkillMe
   return {
     name: metadata.name,
     description: metadata.description,
-    version: metadata.version,
-    author: metadata.author,
+    ...(metadata.version !== undefined && { version: metadata.version }),
+    ...(metadata.author !== undefined && { author: metadata.author }),
     tags: metadata.tags || [],
     priority: metadata.priority ?? 0,
     enabled: metadata.enabled ?? true

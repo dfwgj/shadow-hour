@@ -7,6 +7,7 @@ import type { Message, ContentPart, ToolCall } from "../types/message";
 import type { ToolDefinition } from "../types/tool";
 import type { LLMAdapter, ChatRequest, ChatResponse, StreamCallback, StreamController } from "./types";
 import { streamRequest } from "@xierfloat-monorepo/http-stream";
+import { getTextContent } from "./utils";
 
 /** Anthropic 消息格式 */
 interface AnthropicMessage {
@@ -339,7 +340,7 @@ export class AnthropicAdapter implements LLMAdapter {
         const content: AnthropicContentBlock[] = [];
 
         // 添加文本内容
-        const text = this.getTextContent(msg.content);
+        const text = getTextContent(msg.content);
         if (text) {
           content.push({ type: "text", text });
         }
@@ -402,16 +403,6 @@ export class AnthropicAdapter implements LLMAdapter {
       // 文件类型转换为文本
       return { type: "text", text: part.extractedText || `[File: ${part.name}]` };
     });
-  }
-
-  /**
-   * 获取文本内容
-   */
-  private getTextContent(parts: ContentPart[]): string {
-    return parts
-      .filter((p): p is { type: "text"; text: string } => p.type === "text")
-      .map(p => p.text)
-      .join("");
   }
 
   /**

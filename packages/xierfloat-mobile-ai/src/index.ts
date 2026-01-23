@@ -117,6 +117,7 @@ export {
 // ==================== Storage ====================
 export {
   type ConfigRepository,
+  type SessionRepository,
   type StorageAdapter,
   MemoryStorageAdapter,
   createConfigRepository,

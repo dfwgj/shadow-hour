@@ -9,6 +9,7 @@ import type { Message, ContentPart, ToolCall } from "../types/message";
 import type { ToolDefinition } from "../types/tool";
 import type { LLMAdapter, ChatRequest, ChatResponse, StreamCallback, StreamController } from "./types";
 import { streamRequest } from "@xierfloat-monorepo/http-stream";
+import { getTextContent } from "./utils";
 
 /** OpenAI 消息格式 */
 interface OpenAIMessage {
@@ -345,7 +346,7 @@ export class OpenAIAdapter implements LLMAdapter {
 
     for (const msg of messages) {
       if (msg.role === "system") {
-        result.push({ role: "system", content: this.getTextContent(msg.content) });
+        result.push({ role: "system", content: getTextContent(msg.content) });
       } else if (msg.role === "user") {
         result.push({
           role: "user",
@@ -354,7 +355,7 @@ export class OpenAIAdapter implements LLMAdapter {
       } else if (msg.role === "assistant") {
         const openaiMsg: OpenAIMessage = {
           role: "assistant",
-          content: this.getTextContent(msg.content)
+          content: getTextContent(msg.content)
         };
         if (msg.toolCalls && msg.toolCalls.length > 0) {
           openaiMsg.tool_calls = msg.toolCalls.map(tc => ({
@@ -400,16 +401,6 @@ export class OpenAIAdapter implements LLMAdapter {
       // 文件类型转换为文本
       return { type: "text", text: part.extractedText || `[File: ${part.name}]` };
     });
-  }
-
-  /**
-   * 获取文本内容
-   */
-  private getTextContent(parts: ContentPart[]): string {
-    return parts
-      .filter((p): p is { type: "text"; text: string } => p.type === "text")
-      .map(p => p.text)
-      .join("");
   }
 
   /**

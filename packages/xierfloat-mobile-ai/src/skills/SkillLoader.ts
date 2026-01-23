@@ -9,7 +9,6 @@
 
 import type { Skill, SkillRawData, SkillLoaderConfig, SkillLoadLevel, SkillMetadata } from './types'
 import { SkillRegistry, getSkillRegistry } from './SkillRegistry'
-import { parseSkill, extractMetadata } from './SkillParser'
 
 /**
  * 内联技能定义（简化格式）
@@ -142,7 +141,7 @@ export class SkillLoader {
     }
 
     // 否则使用文件名（去除扩展名）
-    return filename.replace(/\.[^.]+$/, '')
+    return filename?.replace(/\.[^.]+$/, '') || 'unknown'
   }
 
   /**

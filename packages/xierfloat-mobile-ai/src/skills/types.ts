@@ -34,7 +34,9 @@ export interface SkillContent {
   /** reference.md 参考资料（可选） */
   reference?: string
   /** 其他附加资源文件 */
-  resources?: Record<string, string>
+  | undefined
+  /** 其他附加资源文件 */
+  resources?: Record<string, string> | undefined
 }
 
 /**
@@ -108,5 +110,7 @@ export interface SkillRawData {
   /** reference.md 原始内容（可选） */
   referenceMd?: string
   /** 其他资源文件 */
-  resources?: Record<string, string>
+  | undefined
+  /** 其他资源文件 */
+  resources?: Record<string, string> | undefined
 }

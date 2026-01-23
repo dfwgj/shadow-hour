@@ -181,7 +181,7 @@
 import { ref, computed, onMounted, $navigateTo, onUnmounted } from "nativescript-vue";
 import { Screen, Application, Utils, CoreTypes } from "@nativescript/core";
 import { useCalendar } from "../composables/useCalendar";
-import { solarToLunar } from "../utils/lunar";
+import { solarToLunar } from "@xierfloat-monorepo/mobile-ui";
 import { notificationService } from "../services/notification";
 import {
   MonthView,
