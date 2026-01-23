@@ -88,7 +88,7 @@ const getRealUrl = async (url: string) => {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36 Edg/137.0.0.0",
       Cookie:
-        "ABTEST=0|1767257950|v1; SUID=0836251B9CA6A20B00000000687F9A8D; IPLOC=CN4400;  SUV=1753193101802725; SNUID=0B16C5F8E2E5A4AC08379217E30E37FC; ariaDefaultTheme=undefined"
+        "ABTEST=0|1767257950|v1; SUID=0836251B9CA6A20B00000000687F9A8D; IPLOC=CN4400;  SUV=1753193101802725; SNUID=8BD871AE0C0B4507F13D14940DC05545; ariaDefaultTheme=undefined"
     },
     timeout: 15000
   });

@@ -2,6 +2,8 @@
  * Skill 解析器
  *
  * 解析 SKILL.md 文件，提取 YAML frontmatter 和 Markdown 内容
+ * @author DF蓝梦/xierfloat
+ * @date 2025-1-20
  */
 
 import type { SkillMetadata, Skill, SkillRawData, SkillContent } from './types'

@@ -6,6 +6,7 @@
  */
 
 import { ApplicationSettings } from "@nativescript/core";
+import type { ToolCall } from "@xierfloat-monorepo/nativeScript-ai";
 
 /** 聊天消息 */
 export interface ChatMessage {
@@ -14,6 +15,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   toolUseId?: string;
+  toolCalls?: ToolCall[];
 }
 
 /** 会话信息 */

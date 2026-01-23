@@ -7,17 +7,17 @@
  */
 import { ref, computed, onMounted, watch, nextTick, shallowRef, $navigateTo, $navigateBack } from "nativescript-vue";
 import { Screen, Application, Utils, ApplicationSettings, Dialogs } from "@nativescript/core";
-import { Toast } from "@xierfloat-monorepo/nativeScript-ui";
+import { Toast , ToastContainer  } from "@xierfloat-monorepo/nativeScript-ui";
 import {
   useAgent,
   loadSkills,
-  builtinSkills,
   getSkillsPrompt,
   getSkillRegistry,
   getToolRegistry,
   type LLMConfig,
   type Message
 } from "@xierfloat-monorepo/nativeScript-ai";
+import { appSkills } from "@/assets/skills";
 import AIConfig from "./AIConfig.vue";
 import HistoryDrawer from "../components/HistoryDrawer.vue";
 import { parseMarkdown } from "@/utils/markdown";
@@ -206,10 +206,11 @@ onMounted(() => {
     console.error("[AIChat] MCP 工具初始化失败:", error);
   }
 
-  // 初始化 Skills
+  // 初始化 Skills（从前端 assets/skills 加载）
   try {
-    loadSkills(builtinSkills);
+    loadSkills(appSkills);
     skillsReady.value = true;
+    console.log("[AIChat] Skills 已加载:", appSkills.length, "个技能");
   } catch (error) {
     console.error("[AIChat] Skills 初始化失败:", error);
   }
@@ -230,12 +231,19 @@ function loadLastSession() {
 
     // 恢复历史消息到 Agent
     if (agent.value && session.messages.length > 0) {
-      const sdkMessages: Message[] = session.messages.map(m => ({
-        id: m.id,
-        role: m.role as "user" | "assistant" | "tool",
-        content: [{ type: "text" as const, text: m.content }],
-        timestamp: m.timestamp
-      }));
+      const sdkMessages: Message[] = session.messages.map(m => {
+        const msg: Message = {
+          id: m.id,
+          role: m.role as "user" | "assistant" | "tool",
+          content: [{ type: "text" as const, text: m.content }],
+          timestamp: m.timestamp
+        };
+        // 恢复 toolCalls
+        if (m.toolCalls && m.toolCalls.length > 0) {
+          msg.toolCalls = m.toolCalls;
+        }
+        return msg;
+      });
       agent.value.messages.value = sdkMessages;
       console.log("[AIChat] 加载会话:", session.id, "消息数:", session.messages.length);
       nextTick(() => scrollToBottom());
@@ -249,15 +257,29 @@ function loadLastSession() {
 function saveCurrentSession() {
   if (!currentSessionId.value || !agent.value) return;
 
+  // 调试：检查原始消息
+  const allMessages = agent.value.messages.value;
+  console.log("[AIChat] 保存前检查消息数:", allMessages.length);
+  allMessages.forEach(m => {
+    console.log("[AIChat] 消息:", m.id, "role:", m.role, "hasToolCalls:", !!(m.toolCalls?.length));
+  });
+
   // 转换 SDK 消息为历史消息格式
-  const historyMessages: HistoryChatMessage[] = agent.value.messages.value
+  const historyMessages: HistoryChatMessage[] = allMessages
     .filter(m => m.role === "user" || m.role === "assistant")
-    .map(m => ({
-      id: m.id,
-      role: m.role as "user" | "assistant",
-      content: getTextFromMessage(m),
-      timestamp: m.timestamp
-    }));
+    .map(m => {
+      const msg: HistoryChatMessage = {
+        id: m.id,
+        role: m.role as "user" | "assistant",
+        content: getTextFromMessage(m),
+        timestamp: m.timestamp
+      };
+      if (m.toolCalls && m.toolCalls.length > 0) {
+        msg.toolCalls = m.toolCalls;
+        console.log("[AIChat] 保存消息包含 toolCalls:", m.id, m.toolCalls.length);
+      }
+      return msg;
+    });
 
   chatHistoryService.updateSessionMessages(currentSessionId.value, historyMessages);
 }
@@ -321,14 +343,27 @@ function loadSession(id: string) {
     sessionId.value = session.id;
     chatHistoryService.setCurrentSessionId(id);
 
+    // 调试：检查加载的消息是否包含 toolCalls
+    session.messages.forEach(m => {
+      if (m.toolCalls && m.toolCalls.length > 0) {
+        console.log("[AIChat] 加载消息包含 toolCalls:", m.id, m.toolCalls.length);
+      }
+    });
+
     // 恢复历史消息到 Agent
     if (agent.value) {
-      const sdkMessages: Message[] = session.messages.map(m => ({
-        id: m.id,
-        role: m.role as "user" | "assistant" | "tool",
-        content: [{ type: "text" as const, text: m.content }],
-        timestamp: m.timestamp
-      }));
+      const sdkMessages: Message[] = session.messages.map(m => {
+        const msg: Message = {
+          id: m.id,
+          role: m.role as "user" | "assistant" | "tool",
+          content: [{ type: "text" as const, text: m.content }],
+          timestamp: m.timestamp
+        };
+        if (m.toolCalls && m.toolCalls.length > 0) {
+          msg.toolCalls = m.toolCalls;
+        }
+        return msg;
+      });
       agent.value.messages.value = sdkMessages;
     }
 
@@ -602,6 +637,8 @@ async function scrollToBottom() {
         @session-tap="loadSession"
         @delete-tap="confirmDeleteSession"
       />
+       <!-- Toast 容器 (覆盖层) -->
+      <ToastContainer row="0" col="0" />
     </GridLayout>
   </Page>
 </template>

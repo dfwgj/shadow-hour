@@ -148,13 +148,8 @@ export {
   loadSkill,
   loadSkills,
   searchSkills,
-  getSkillsPrompt,
-  // Builtin skills
-  aigisBrainSkill,
-  scheduleOptimizationSkill,
-  meetingPreparationSkill,
-  weeklyReviewSkill,
-  timeEstimationSkill,
-  builtinSkillPackage,
-  builtinSkills
+  getSkillsPrompt
 } from "./skills";
+
+// 注意：包不再提供内置技能
+// 技能由前端应用在 apps/src/assets/skills 目录下定义和注册

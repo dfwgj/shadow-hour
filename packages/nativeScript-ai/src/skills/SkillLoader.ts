@@ -5,9 +5,11 @@
  * - 内联定义（代码中直接定义）
  * - 远程 URL
  * - 本地文件系统（需要平台支持）
+ * @author DF蓝梦/xierfloat
+ * @date 2025-1-20
  */
 
-import type { Skill, SkillRawData, SkillLoaderConfig, SkillLoadLevel, SkillMetadata } from './types'
+import type { Skill, SkillRawData, SkillLoaderConfig,  SkillMetadata } from './types'
 import { SkillRegistry, getSkillRegistry } from './SkillRegistry'
 
 /**

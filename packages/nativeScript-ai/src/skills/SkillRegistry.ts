@@ -1,7 +1,9 @@
 /**
  * Skill 注册表
  *
- * 管理技能的注册、检索和搜索
+ * 管理技能的注册、检索和搜索功能
+ * @author DF蓝梦/xierfloat
+ * @date 2025-1-20
  */
 
 import type { Skill, SkillMetadata, SkillSearchResult, SkillRegistryConfig, SkillRawData } from './types'

@@ -1,5 +1,7 @@
 /**
  * 会话存储仓储
+ * @author DF蓝梦/xierfloat
+ * @date 2025-12-26
  */
 
 import type { Message } from '../types/message'
@@ -116,7 +118,7 @@ export class SessionRepositoryImpl implements SessionRepository {
       createdAt: s.createdAt,
       updatedAt: s.updatedAt,
       messageCount: s.metadata.messageCount,
-      lastMessagePreview: s.metadata.lastMessagePreview
+      ...(s.metadata.lastMessagePreview !== undefined && { lastMessagePreview: s.metadata.lastMessagePreview })
     }))
   }
 
@@ -174,7 +176,9 @@ export class SessionRepositoryImpl implements SessionRepository {
   }
 
   async count(params?: SessionQueryParams): Promise<number> {
-    const snapshots = await this.query({ ...params, limit: undefined, offset: undefined })
+    // 移除 limit 和 offset 以获取完整计数
+    const { limit: _limit, offset: _offset, ...rest } = params ?? {}
+    const snapshots = await this.query(Object.keys(rest).length > 0 ? rest : undefined)
     return snapshots.length
   }
 

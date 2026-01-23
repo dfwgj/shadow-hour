@@ -14,16 +14,22 @@ export interface SessionMetadata {
   messageCount: number
   /** Token 使用量 */
   tokenUsage?: {
-    input: number
-    output: number
-    total: number
-  }
+  input: number
+  output: number
+  total: number
+}
+/** 最后一条消息摘要 */
+| undefined
   /** 最后一条消息摘要 */
   lastMessagePreview?: string
   /** 使用的模型 */
+  | undefined
+  /** 使用的模型 */
   model?: string
   /** 自定义标签 */
-  tags?: string[]
+  | undefined
+  /** 自定义标签 */
+  tags?: string[] | undefined
 }
 
 /** 会话 */

@@ -1,5 +1,7 @@
 /**
  * LLM 配置存储仓储
+ * @author DF蓝梦/xierfloat
+ * @date 2025-12-26
  */
 
 import type { LLMConfig } from '../types/config'
