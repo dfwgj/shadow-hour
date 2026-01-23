@@ -45,9 +45,9 @@ module.exports = env => {
       {
         __APP_VERSION__: JSON.stringify(appEnv.APP_VERSION || "1.0.0"),
         __UPDATE_CHECK_URL__: JSON.stringify(
-          appEnv.UPDATE_CHECK_URL || "https://api.github.com/repos/user/repo/releases/latest"
+          appEnv.UPDATE_CHECK_URL || "https://api.github.com/repos/dfwgj/shadow-hour/releases/latest"
         ),
-        __DOWNLOAD_URL__: JSON.stringify(appEnv.DOWNLOAD_URL || "https://github.com/user/repo/releases/latest")
+        __DOWNLOAD_URL__: JSON.stringify(appEnv.DOWNLOAD_URL || "https://github.com/dfwgj/shadow-hour/releases/latest")
       }
     ]);
 

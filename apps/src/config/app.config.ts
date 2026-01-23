@@ -18,11 +18,11 @@ export const AppConfig = {
   updateCheckUrl:
     typeof __UPDATE_CHECK_URL__ !== "undefined"
       ? __UPDATE_CHECK_URL__
-      : "https://api.github.com/repos/user/repo/releases/latest",
+      : "https://api.github.com/repos/dfwgj/shadow-hour/releases/latest",
 
   // 下载页面地址 (用户点击后跳转)
   downloadUrl:
-    typeof __DOWNLOAD_URL__ !== "undefined" ? __DOWNLOAD_URL__ : "https://github.com/user/repo/releases/latest"
+    typeof __DOWNLOAD_URL__ !== "undefined" ? __DOWNLOAD_URL__ : "https://github.com/dfwgj/shadow-hour/releases/latest"
 };
 
 export default AppConfig;
