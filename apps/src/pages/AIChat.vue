@@ -7,7 +7,7 @@
  */
 import { ref, computed, onMounted, watch, nextTick, shallowRef, $navigateTo, $navigateBack } from "nativescript-vue";
 import { Screen, Application, Utils, ApplicationSettings, Dialogs } from "@nativescript/core";
-import { Toast , ToastContainer  } from "@xierfloat-monorepo/nativeScript-ui";
+import { Toast, ToastContainer } from "@xierfloat-monorepo/nativeScript-ui";
 import {
   useAgent,
   loadSkills,
@@ -17,7 +17,7 @@ import {
   type LLMConfig,
   type Message
 } from "@xierfloat-monorepo/nativeScript-ai";
-import { appSkills } from "@/assets/skills";
+import { appSkills } from "@/services/skills";
 import AIConfig from "./AIConfig.vue";
 import HistoryDrawer from "../components/HistoryDrawer.vue";
 import { parseMarkdown } from "@/utils/markdown";
@@ -261,7 +261,7 @@ function saveCurrentSession() {
   const allMessages = agent.value.messages.value;
   console.log("[AIChat] 保存前检查消息数:", allMessages.length);
   allMessages.forEach(m => {
-    console.log("[AIChat] 消息:", m.id, "role:", m.role, "hasToolCalls:", !!(m.toolCalls?.length));
+    console.log("[AIChat] 消息:", m.id, "role:", m.role, "hasToolCalls:", !!m.toolCalls?.length);
   });
 
   // 转换 SDK 消息为历史消息格式
@@ -637,7 +637,7 @@ async function scrollToBottom() {
         @session-tap="loadSession"
         @delete-tap="confirmDeleteSession"
       />
-       <!-- Toast 容器 (覆盖层) -->
+      <!-- Toast 容器 (覆盖层) -->
       <ToastContainer row="0" col="0" />
     </GridLayout>
   </Page>
