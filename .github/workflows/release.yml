@@ -46,11 +46,10 @@ jobs:
       - name: Update app version in .env
         run: |
           echo "APP_VERSION=${{ steps.version.outputs.VERSION }}" > apps/.env
-          echo "UPDATE_CHECK_URL=${{ secrets.UPDATE_CHECK_URL }}" >> apps/.env
-          echo "DOWNLOAD_URL=${{ secrets.DOWNLOAD_URL }}" >> apps/.env
 
       - name: Decode keystore
         run: |
+          mkdir -p apps/keystore
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > apps/keystore/release.keystore
 
       - name: Build Release APK
@@ -67,26 +66,7 @@ jobs:
           mv apps/platforms/android/app/build/outputs/apk/release/shadowHour-*-release.apk \
              shadowHour-v${{ steps.version.outputs.VERSION }}.apk
 
-      - name: Upload to your server
-        run: |
-          curl -X POST "${{ secrets.UPLOAD_SERVER_URL }}/upload" \
-            -H "Authorization: Bearer ${{ secrets.UPLOAD_SERVER_TOKEN }}" \
-            -F "file=@shadowHour-v${{ steps.version.outputs.VERSION }}.apk" \
-            -F "version=${{ steps.version.outputs.VERSION }}"
-
-      - name: Update version.json on server
-        run: |
-          curl -X POST "${{ secrets.UPLOAD_SERVER_URL }}/version" \
-            -H "Authorization: Bearer ${{ secrets.UPLOAD_SERVER_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "tag_name": "v${{ steps.version.outputs.VERSION }}",
-              "version": "${{ steps.version.outputs.VERSION }}",
-              "html_url": "${{ secrets.DOWNLOAD_URL }}/shadowHour-v${{ steps.version.outputs.VERSION }}.apk",
-              "body": "Release v${{ steps.version.outputs.VERSION }}"
-            }'
-
-      - name: Create GitHub Release (optional)
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: shadowHour-v${{ steps.version.outputs.VERSION }}.apk
