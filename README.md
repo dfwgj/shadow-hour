@@ -40,6 +40,8 @@ _本项目为粉丝致敬作品，与 ATLUS 官方无关。_
 - MCP 协议工具调用，AI 可直接操作日历和通知，内置网络搜索页面读取工具
 - 支持自定义技能，扩展功能
 - SKILL协议轻量化实现，按需加载技能
+
+- 
   <img src=".github\image\埃癸斯.png" alt="智能助手埃癸斯" width="150" > <img src=".github\image\agent.png" alt="智能助手埃癸斯" width="150" > <img src=".github\image\history.png" alt="对话历史" width="150" >
 
 ### 日程管理
@@ -47,6 +49,8 @@ _本项目为粉丝致敬作品，与 ATLUS 官方无关。_
 - 日历事件的增删改查
 - 智能日程安排建议
 - 本地通知提醒
+
+- 
   <img src=".github\image\year.png" alt="年份" width="150" > <img src=".github\image\month.png" alt="月份" width="150" > <img src=".github\image\week.png" alt="周历" width="150" >
 
 ### 技术架构
