@@ -42,7 +42,7 @@ _本项目为粉丝致敬作品，与 ATLUS 官方无关。_
 - SKILL协议轻量化实现，按需加载技能
 
 - 
-  <img src=".github\image\埃癸斯.png" alt="智能助手埃癸斯" width="150" > <img src=".github\image\agent.png" alt="智能助手埃癸斯" width="150" > <img src=".github\image\history.png" alt="对话历史" width="150" >
+  <img src=".github\image\埃癸斯.png" alt="智能助手埃癸斯" width="200" > <img src=".github\image\agent.png" alt="智能助手埃癸斯" width="200" > <img src=".github\image\history.png" alt="对话历史" width="200" >
 
 ### 日程管理
 
@@ -51,7 +51,7 @@ _本项目为粉丝致敬作品，与 ATLUS 官方无关。_
 - 本地通知提醒
 
 - 
-  <img src=".github\image\year.png" alt="年份" width="150" > <img src=".github\image\month.png" alt="月份" width="150" > <img src=".github\image\week.png" alt="周历" width="150" >
+  <img src=".github\image\year.png" alt="年份" width="200" > <img src=".github\image\month.png" alt="月份" width="200" > <img src=".github\image\week.png" alt="周历" width="200" >
 
 ### 技术架构
 
