@@ -11,7 +11,7 @@
     "clean": "ns clean",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.vue",
-    "console": "C:\\Users\\DF\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe logcat -s JS:*"
+    "console": "node -e \"const {execSync}=require('child_process');const adb=process.env.ANDROID_HOME+'/platform-tools/adb';execSync(adb+' logcat -s JS:*',{stdio:'inherit'})\""
   },
   "dependencies": {
     "@nativescript-community/sqlite": "^3.5.1",
